@@ -1,0 +1,378 @@
+FactoryJet Cold Email Sequences — 2026
+Primary Sequence: AI Agent Development → US Shopify DTC Brands Secondary Sequence: AI SEO / GEO → UK Founder-Led SMBs
+
+
+SEQUENCE RULES (Read Before Sending Anything)
+Based on 2026 benchmark data — Instantly, Hunter.io, Autobound — 31M+ emails analysed:
+
+Under 80 words for Email 1. Under 120 for Emails 2–4. Email 5 under 60.
+One CTA per email. Multiple asks kill reply rates.
+Plain text only. No images, no HTML, no tracking pixels. Campaigns without open tracking see +68% higher reply rates.
+Send Tuesday–Wednesday, 7–11am recipient's local time.
+Never start with "I". Never say "just checking in", "hope this finds you well", "following up on my last email".
+Each follow-up = new angle. Not a bump. Not a repeat. Not "did you see my last email?"
+Spacing: Day 1 → Day 4 → Day 8 → Day 13 → Day 19.
+Target list size per batch: 20–50 prospects. Smaller and tighter = higher reply rates.
+Bounce rate: Keep below 2%. Verify every email address before uploading.
+Unsubscribe link: Required from Email 2 onward for CAN-SPAM (US). From Email 1 for UK.
+
+Personalization rule: Only personalise what you can verify in under 30 seconds per prospect. Badly filled tokens are worse than no personalisation. The three safe tokens for every email are:
+
+{{first_name}} — prospect's first name
+{{company}} — their brand or company name
+{{industry}} — what vertical they operate in (skincare, supplements, apparel, SaaS, etc.) — visible on their website in seconds
+
+Everything else is optional and should only be added when you can verify it with certainty.
+
+
+SEQUENCE A: AI Agent Development → US Shopify DTC Brands
+ICP: Founder or Head of CX at a Shopify or Shopify Plus brand Revenue range: $1M–$30M GMV Verticals: Apparel, beauty, supplements, home goods, pet products Sending from: bhavesh@factoryjetecom.com
+
+
+EMAIL 1 — Day 1 (The Category Insight)
+Subject: {{company}}'s support costs
+
+Preview text: a number most {{industry}} founders don't track
+
+Body:
+
+{{first_name}}
+
+Most brands doing $2M–$10M on Shopify spend $15K–$25K monthly on customer support - mostly order tracking, returns, and size or product queries - without realising it's that high until they add it up.
+
+We helped a brand in your space resolve 70% of those tickets automatically in 90 days, without replacing their helpdesk or retraining their team.
+
+Worth a 15-minute Loom showing how it works?
+
+Bhavesh 
+FactoryJet
+
+
+
+Why this works:
+
+74 words. Three tokens only — all fillable in under 30 seconds per prospect.
+The claim is true across the category, so it holds for every prospect regardless of their specific situation.
+Quantifies pain in dollars — universally understood by any founder.
+CTA is low-friction: a Loom, not a sales call.
+No spam words. No "free", "guarantee", "AI agent", "SEO" in subject or body.
+No exclamation marks anywhere.
+
+
+EMAIL 2 — Day 4 (The Proof Drop)
+Subject: 90-day result — {{industry}} brand
+
+Preview text: same Shopify setup, no helpdesk change
+
+Body:
+
+{{first_name}} —
+
+Sharing a result from a project we wrapped earlier this year.
+
+A {{industry}} brand on Shopify Plus was handling around 2,800 support tickets monthly — mostly order tracking, returns, and product queries. Their CS team was stretched heading into a product launch.
+
+We built an AI support layer on top of their existing helpdesk. 90 days in: 71% of tickets resolved without a human touching them. The CS team shifted focus to high-value conversations and repeat customers.
+
+No new software for their team to learn. No ripping out what they already had.
+
+Happy to walk you through the build — 20 minutes on a call or a Loom, whichever is easier.
+
+— Bhavesh FactoryJet Technologies | connect@factoryjet.com
+
+
+
+Why this works:
+
+Specific numbers (2,800 tickets, 71%, 90 days) make it credible without naming a client.
+"No rip-and-replace" pre-empts the #1 objection before it's raised.
+Two CTA options (call or Loom) reduce friction — prospect self-selects.
+Still reads like a founder sharing a result, not a sales pitch.
+
+
+EMAIL 3 — Day 8 (The Broader Shift)
+Subject: how the smarter {{industry}} brands are handling this
+
+Preview text: it's a structural change, not a tool swap
+
+Body:
+
+{{first_name}} —
+
+Something we're seeing consistently across {{industry}} brands on Shopify right now:
+
+The ones pulling ahead on retention aren't adding more CS headcount — they're treating AI as the first-response layer and keeping their human team for escalations, VIP customers, and win-back conversations.
+
+The economics make sense. A senior CS rep fully loaded costs $65–$85K/year in the US and still can't work nights, weekends, or handle 300 tickets at once during a sale. An AI layer handles all of that and costs a fraction.
+
+The brands that set this up before their next major launch or sale period are the ones that don't scramble during peak volume.
+
+4–6 weeks to build and deploy properly. Open to a quick call to see if it fits where {{company}} is right now?
+
+— Bhavesh
+
+
+
+Why this works:
+
+Completely different angle from Emails 1 and 2 — no case study, no numbers, no proof.
+Addresses the real alternative (another hire) head-on before the prospect raises it.
+"4–6 weeks" creates implicit timing urgency without using the word urgent.
+Single soft CTA — a call to explore fit, not to buy.
+
+
+EMAIL 4 — Day 13 (The Direct Ask)
+Subject: worth asking directly
+
+Preview text: two questions
+
+Body:
+
+{{first_name}} —
+
+Sent a few notes about AI support for {{company}} — wanted to ask directly rather than keep guessing.
+
+Two quick questions:
+
+Is support volume something {{company}} is actively looking to solve in the next quarter? And is a Bengaluru-based team something that would work for you, or does location matter for this kind of build?
+
+Either answer helps me know whether it's worth continuing the conversation or leaving you alone.
+
+— Bhavesh
+
+
+
+Why this works:
+
+Breaks the pattern of the previous three emails entirely — no story, no proof, no angle.
+Asking directly for a yes or no is disarming. Most cold emails avoid directness. This one uses it.
+The location question pre-empts the offshore objection and invites an honest reply either way.
+Any reply — even a "not for us" — is a win because it opens a conversation.
+
+
+EMAIL 5 — Day 19 (The Respectful Exit)
+Subject: closing the loop
+
+Preview text: last note from me
+
+Body:
+
+{{first_name}} —
+
+Sent a few notes over the past few weeks — nothing back, so I'll assume the timing isn't right for {{company}}.
+
+Not going to keep filling your inbox.
+
+If support volume becomes a priority later this year, just reply to this and I'll pick it back up from here.
+
+Appreciate you reading.
+
+— Bhavesh
+
+
+
+Why this works:
+
+Under 60 words. Breakup emails work because they are short.
+"I'll assume the timing isn't right" removes guilt without accusation — which paradoxically increases replies.
+No tokens that could go wrong. Only {{first_name}} and {{company}} — both always available.
+Breakup emails consistently generate replies from prospects who were interested but hadn't responded yet.
+
+
+
+
+SEQUENCE B: AI SEO / GEO → UK Founder-Led SMBs
+ICP: Marketing Director or Founder at a UK SMB Revenue range: £1M–£50M Verticals: Professional services, DTC ecommerce, SaaS, finance Compliance note: Only email Ltd, PLC, LLP corporate entities. Include unsubscribe link from Email 1. Keep messaging directly relevant to the recipient's business role. Legitimate interest basis under UK GDPR. Sending from: bhavesh@factoryjetecom.com
+
+
+EMAIL 1 — Day 1 (The Search Shift)
+Subject: {{company}}'s search traffic
+
+Preview text: something shifted on Google UK
+
+Body:
+
+{{first_name}} —
+
+Most {{industry}} businesses in the UK are seeing organic search traffic behave differently in 2026 — not because their rankings dropped, but because Google is now showing AI-generated summaries above position 1 on a growing share of searches.
+
+Seer Interactive measured a 61% drop in clicks on searches where these summaries appear. Position 1 no longer means what it did 18 months ago.
+
+The businesses recovering fastest are getting cited inside those summaries, not just ranked below them. It's a different discipline to traditional SEO.
+
+Happy to put together a one-page snapshot of where {{company}} stands on this. Worth it?
+
+— Bhavesh FactoryJet Technologies
+
+
+
+Why this works:
+
+Opens with a market-level truth — not a claim about this specific prospect.
+The 61% stat is real, named, and verifiable. Builds instant credibility.
+"Worth it?" is a yes/no. The lowest possible friction CTA.
+No spam words. "SEO" does not appear in the subject line.
+Three tokens only: {{first_name}}, {{company}}, {{industry}}.
+
+
+EMAIL 2 — Day 4 (The UK Result)
+Subject: 6-month result — UK {{industry}} brand
+
+Preview text: traffic held flat while competitors dropped
+
+Body:
+
+{{first_name}} —
+
+Sharing a result from a UK client in {{industry}} we started working with late last year.
+
+They were losing clicks to AI summaries on 14 of their top 20 search terms. We restructured their content to get cited inside those summaries — targeting ChatGPT, Perplexity, and Google's AI Overviews specifically.
+
+Six months in: cited in AI results for 9 of those 14 terms. Their organic traffic held flat while competitors in the same space dropped 30–45%.
+
+We're based in Bengaluru — 4.5 hours overlap with UK working hours, most work is async. Priced at £750–£1,200/month depending on scope, versus the £2,500–£4,500/month UK agencies are charging for the same service.
+
+Worth 20 minutes to show you what this looks like for {{company}}?
+
+— Bhavesh FactoryJet Technologies | connect@factoryjet.com
+
+
+
+Why this works:
+
+Specific result (14 keywords, 9 cited, 6 months, 30–45% competitor drop) builds trust without naming the client.
+Drops the price anchor in Email 2 — not Email 1. Earns the right to mention pricing with proof first.
+Time-zone call-out is the UK-specific trust signal. It matters to UK buyers.
+Single CTA: 20-minute call.
+
+
+EMAIL 3 — Day 8 (The Visibility Gap)
+Subject: where {{company}} stands in AI search
+
+Preview text: pulled a quick check this morning
+
+Body:
+
+{{first_name}} —
+
+Ran a quick check on how {{company}} appears across AI search platforms — ChatGPT, Perplexity, and Google's AI Overviews — for the kind of queries your buyers run.
+
+For most {{industry}} businesses at your stage, the pattern is the same: strong traditional search presence, very little AI citation. The two don't automatically go together.
+
+The one-page snapshot I mentioned in my first note shows exactly which queries your buyers are asking AI tools, which competitors are being cited, and what it would take to get {{company}} into those results.
+
+No obligation — happy to send it over if useful. Want me to?
+
+— Bhavesh
+
+
+
+Why this works:
+
+References the first email naturally without saying "following up on my last email."
+The snapshot artifact offer is the conversion moment — a concrete deliverable, not a vague pitch.
+"Want me to?" — two words. Absolute minimum friction CTA.
+No new claims needed. The previous two emails did the credibility work.
+
+
+EMAIL 4 — Day 13 (The Direct Question)
+Subject: worth asking directly
+
+Preview text: one question
+
+Body:
+
+{{first_name}} —
+
+Three notes about AI search visibility for {{company}} — going to ask directly rather than keep guessing.
+
+Is this something on your radar for 2026, or is it not a priority right now?
+
+Either answer is genuinely useful — helps me know whether to stay in touch or leave you alone.
+
+— Bhavesh
+
+
+
+Why this works:
+
+46 words. The shortest email in the sequence by design.
+Pattern break — after three substantial emails, brevity is disarming.
+Yes or no question. Even a "not right now" opens a dialogue and keeps the door open.
+"Leave you alone" signals respect for their time. Reduces the feeling of being sold to.
+
+
+EMAIL 5 — Day 19 (The Exit)
+Subject: last note
+
+Preview text: no more emails after this one
+
+Body:
+
+{{first_name}} —
+
+Last note — I don't want to be another name filling your inbox.
+
+If AI search visibility becomes something {{company}} wants to look at later this year, just reply here and I'll pick it back up.
+
+— Bhavesh
+
+
+
+Why this works:
+
+38 words. Clean, respectful, no desperation.
+"I don't want to be another name filling your inbox" — signals awareness that cold email is noise. Earns goodwill.
+Leaves the door fully open with zero pressure.
+Often generates replies from prospects who read every email but hadn't found a moment to respond.
+
+
+
+
+SUBJECT LINE A/B TEST OPTIONS
+Test one variation per 20-prospect batch. Never test more than one variable at a time.
+
+Sequence A (AI Agents → US):
+
+{{company}}'s support costs ← Primary (recommended start)
+support volume at {{company}}
+70% ticket deflection
+{{first_name}} — quick question
+the CS headcount trap
+
+Sequence B (AI SEO → UK):
+
+{{company}}'s search traffic ← Primary (recommended start)
+AI summaries and {{company}}
+something shifted on Google UK
+your top keywords in 2026
+{{first_name}} — one question
+
+
+WORDS AND PHRASES TO NEVER USE
+The following trigger spam filters in 2026, specifically from non-Western infrastructure. Remove from every subject line and body:
+
+❌ Free, guarantee, no risk, risk-free ❌ Limited time, act now, urgent, important ❌ Click here, visit our website, check this out ❌ SEO, search engine ranking, Google ranking ❌ Discount, offer, deal, savings, affordable ❌ Passive income, revenue streams, earn money ❌ I hope this finds you well ❌ Just checking in / just following up ❌ Per my last email / as mentioned ❌ We are a leading agency / we are the best ❌ Revolutionary, game-changing, cutting-edge, innovative ❌ Excited to connect / thrilled to reach out / delighted ❌ Exclamation marks in any subject line ❌ ALL CAPS anywhere in subject or body ❌ Multiple links in a single email ❌ Attachments in Emails 1 or 2
+
+
+PRE-SEND CHECKLIST
+Complete every item before the first email goes out. Skipping any of these is the most common reason campaigns land in spam.
+
+SPF record configured and published for factoryjetecom.com
+DKIM record configured and validated (check via mail-tester.com)
+DMARC record set — start with p=none, move to p=quarantine after 30 days
+Domain warm-up running for minimum 3 weeks before first campaign send
+All prospect email addresses verified — bounce rate must stay under 2%
+{{first_name}}, {{company}}, {{industry}} filled for every contact before upload
+Unsubscribe link present from Email 2 onward (US) / Email 1 onward (UK)
+Week 1 send volume capped at 5 emails/day per inbox across all inboxes
+Suppression list created and loaded before first send
+Reply routing confirmed — all replies land in an inbox checked daily
+Loom walkthrough recorded (10–12 min) and link ready before Email 1 goes out
+
+
+
+Sequences authored for FactoryJet Technologies | factoryjet.com Version 2 — Final | April 2026
+
+
+

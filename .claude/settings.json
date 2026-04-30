@@ -1,0 +1,23 @@
+{
+  "permissions": {
+    "allow": [
+      "WebFetch(domain:factoryjet.com)",
+      "Bash(npx vite *)",
+      "Bash(curl -s \"http://localhost:5000/api/contacts\")",
+      "Bash(netstat -ano)",
+      "Bash(taskkill /PID 22448 /F)",
+      "Bash(npm run *)",
+      "Bash(curl -s \"http://localhost:5000/api/contacts?limit=2\")",
+      "Bash(timeout 5 node server.js)",
+      "Bash(pkill -f \"node\")",
+      "PowerShell(Stop-Process -Name node -Force -ErrorAction SilentlyContinue)",
+      "Bash(curl -s \"http://localhost:5173\")",
+      "Bash(curl -s \"http://localhost:5000/api/contacts/stats\")",
+      "Bash(curl -s \"http://localhost:5000/api/contacts?limit=1\")",
+      "Bash(nohup node *)",
+      "Bash(cat)",
+      "Bash(curl -s -X POST http://localhost:5000/upload -F file=@/tmp/test.csv -H 'Origin: http://localhost:5173')",
+      "Bash(curl -s -X POST http://localhost:5000/upload -F file=@/tmp/test2.csv -H 'Origin: http://localhost:5173')"
+    ]
+  }
+}
