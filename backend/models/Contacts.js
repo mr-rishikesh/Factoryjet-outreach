@@ -169,6 +169,22 @@ const contactSchema = new mongoose.Schema({
     unsubscribe: {
       type: Boolean,
       default: false
+    },
+
+    bounceType: {
+      type: String,
+      enum: ['hard', 'soft', 'complaint', null],
+      default: null
+    },
+
+    bounceReason: {
+      type: String,
+      default: null
+    },
+
+    bouncedAt: {
+      type: Date,
+      default: null
     }
   },
 
@@ -176,6 +192,108 @@ const contactSchema = new mongoose.Schema({
   notes: {
     type: String,
     default: "MARCH17-26"
+  },
+
+  // Email sequence tracking (Phase 2 - 2026 Sequences)
+  emailSequence: {
+    // Which sequence: 'A' (US Shopify DTC) or 'B' (UK SMB)
+    sequenceType: {
+      type: String,
+      enum: ['A', 'B'],
+      default: null
+    },
+
+    // Current email number (1-5) in the sequence
+    currentEmailNumber: {
+      type: Number,
+      default: 0
+    },
+
+    // Sequence status
+    sequenceStatus: {
+      type: String,
+      enum: ['not_started', 'active', 'paused', 'completed', 'replied', 'bounced', 'unsubscribed'],
+      default: 'not_started'
+    },
+
+    // Start date of the sequence
+    sequenceStartedAt: Date,
+
+    // Complete history of emails sent in this sequence
+    emailHistory: [
+      {
+        emailNumber: {
+          type: Number,
+          required: true
+        },
+        day: {
+          type: Number,
+          required: true
+        },
+        subject: String,
+        body: String,
+        subjectVariant: {
+          type: String,
+          default: 'primary'
+        },
+        variantIndex: {
+          type: Number,
+          default: 0
+        },
+        sentAt: {
+          type: Date,
+          default: Date.now
+        },
+        deliveryStatus: {
+          type: String,
+          enum: ['pending', 'sent', 'delivered', 'bounced', 'complained', 'failed'],
+          default: 'pending'
+        },
+        bounceCode: {
+          type: String,
+          default: null
+        },
+        bounceMessage: {
+          type: String,
+          default: null
+        },
+        openedAt: Date,
+        clickedAt: Date,
+        repliedAt: Date
+      }
+    ],
+
+    // Scheduled dates for remaining emails (Day 1→4→8→13→19)
+    scheduledDates: {
+      email1: Date,  // Day 1
+      email2: Date,  // Day 4
+      email3: Date,  // Day 8
+      email4: Date,  // Day 13
+      email5: Date   // Day 19
+    },
+
+    // Next email scheduled to send
+    nextEmailNumber: {
+      type: Number,
+      default: 1
+    },
+    nextEmailScheduledFor: Date,
+
+    // When the last email was sent
+    lastEmailSentAt: Date,
+
+    // A/B test tracking
+    abTest: {
+      variantIndex: {
+        type: Number,
+        default: 0
+      },
+      variantSent: String,
+      replyRate: {
+        type: Number,
+        default: 0
+      }
+    }
   }
 
 }, { timestamps: true });

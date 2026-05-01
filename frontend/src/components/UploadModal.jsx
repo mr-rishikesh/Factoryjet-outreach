@@ -35,10 +35,12 @@ export default function UploadModal({ onClose, onDone }) {
     setError(null);
     try {
       const data = await api.uploadCSV(file);
+      console.log("[Upload] Response:", data);
       setResult(data);
       setPhase("result");
     } catch (err) {
-      setError(err.message);
+      console.error("[Upload] Error:", err);
+      setError(err.message || "Upload failed - check console for details");
       setPhase("pick");
     }
   };

@@ -1,7 +1,7 @@
 
 
 
-export async function formate(body, user, thanks) {
+export async function formate(body, user, thanks, unsubscribeUrl = null) {
     const greetingName = [user?.firstName, user?.lastName].filter(Boolean).join(" ").trim() || "there";
 
     const bdy =
@@ -15,6 +15,7 @@ If this sounds relevant, just reply to this email and we'll take it from there.
 — FactoryJet Team
 📞 +91 9699977699
 🌐 https://factoryjet.com
+${unsubscribeUrl ? `\nTo stop receiving these emails: ${unsubscribeUrl}` : ''}
 
 ${thanks} `
 

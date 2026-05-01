@@ -1,4 +1,6 @@
 const BASE = "http://localhost:5000/api/contacts";
+const SEQ_BASE = "http://localhost:5000/api/sequences";
+const COMP_BASE = "http://localhost:5000/api/compliance";
 
 async function request(url, options = {}) {
   const res = await fetch(url, {
@@ -52,12 +54,61 @@ export const api = {
   uploadCSV: async (file) => {
     const formData = new FormData();
     formData.append("file", file);
-    const res = await fetch("http://localhost:5000/upload", {
+    const res = await fetch("/upload", {
       method: "POST",
       body: formData,
     });
     const data = await res.json();
     if (!res.ok) throw new Error(data.error || "Upload failed");
     return data;
+  },
+
+  sequences: {
+    health: () => request(`${SEQ_BASE}/health`),
+    dueForEmail: (type = null) => {
+      const url = type ? `${SEQ_BASE}/due?type=${type}` : `${SEQ_BASE}/due`;
+      return request(url);
+    },
+    runScheduled: (limit = 50) =>
+      request(`${SEQ_BASE}/run-scheduled`, {
+        method: "POST",
+        body: JSON.stringify({ limit }),
+      }),
+    analytics: (type = null) => {
+      const url = type ? `${SEQ_BASE}/analytics?type=${type}` : `${SEQ_BASE}/analytics`;
+      return request(url);
+    },
+  },
+
+  compliance: {
+    auditStats: (from = null) => {
+      const url = from ? `${COMP_BASE}/audit-stats?from=${from}` : `${COMP_BASE}/audit-stats`;
+      return request(url);
+    },
+    auditLog: (page = 1, limit = 50, filters = {}) => {
+      const params = new URLSearchParams({ page, limit, ...filters }).toString();
+      return request(`${COMP_BASE}/audit-log?${params}`);
+    },
+    suppression: (page = 1, limit = 50) =>
+      request(`${COMP_BASE}/suppression?page=${page}&limit=${limit}`),
+    addSuppression: (email, reason = "doNotContact") =>
+      request(`${COMP_BASE}/suppression`, {
+        method: "POST",
+        body: JSON.stringify({ email, reason }),
+      }),
+    importSuppression: (emails) =>
+      request(`${COMP_BASE}/suppression/import`, {
+        method: "POST",
+        body: JSON.stringify({ emails }),
+      }),
+    suppressionStats: () => request(`${COMP_BASE}/suppression/stats`),
+    checkCompliance: (sequenceType) =>
+      request(`${COMP_BASE}/check/${sequenceType}`),
+    gdprExport: (contactId) => request(`${COMP_BASE}/gdpr/export/${contactId}`),
+    verifyEmail: (email) =>
+      request(`${COMP_BASE}/verify-email`, {
+        method: "POST",
+        body: JSON.stringify({ email }),
+      }),
   },
 };

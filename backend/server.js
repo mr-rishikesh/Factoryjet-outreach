@@ -1,20 +1,30 @@
+import 'dotenv/config';
 import express from "express";
 import mongoose from "mongoose";
 import multer from "multer";
 import csv from "csv-parser";
 import fs from "fs";
+import cron from "node-cron";
 import Contact from "./models/Contacts.js";
 import { sendColdMailTest } from "./ai-service/service.js";
 // import { sendEmail } from "./email-service/index.js";
 import emailRouter from "./routes/email.router.js";
 import contactRouter from "./routes/contact.router.js";
+import sequenceRouter from "./routes/sequence.router.js";
+import deliveryRouter from "./routes/delivery.router.js";
+import complianceRouter from "./routes/compliance.router.js";
+import { runScheduledSends } from "./ai-service/sequenceService.js";
 
 const app = express();
 const PORT = 5000;
+console.log("SERVER.JS LOADED AT " + new Date().toISOString());
 
 // CORS for frontend
 app.use((req, res, next) => {
-  res.header("Access-Control-Allow-Origin", "http://localhost:5173");
+  const origin = req.headers.origin;
+  if (origin && (origin.startsWith("http://localhost:") || origin.startsWith("http://127.0.0.1:"))) {
+    res.header("Access-Control-Allow-Origin", origin);
+  }
   res.header("Access-Control-Allow-Methods", "GET, POST, PATCH, DELETE, OPTIONS");
   res.header("Access-Control-Allow-Headers", "Content-Type, Authorization");
   res.header("Access-Control-Allow-Credentials", "true");
@@ -24,14 +34,97 @@ app.use((req, res, next) => {
 
 app.use(express.json());
 
+console.log("Mounting routers...");
 app.use("/email", emailRouter);
+console.log("✅ Email router mounted");
 app.use("/api/contacts", contactRouter);
+console.log("✅ Contacts router mounted");
+app.use("/api/sequences", sequenceRouter);
+console.log("✅ Sequences router mounted");
+app.use("/", deliveryRouter);
+console.log("✅ Delivery router mounted");
+app.use("/api/compliance", complianceRouter);
+console.log("✅ Compliance router mounted");
+
+// Test route
+app.get("/api/test", (req, res) => {
+  res.json({ success: true, message: "Test route works" });
+});
+
+// Debug: Check contact count
+app.get("/api/debug/contacts-count", async (req, res) => {
+  try {
+    const count = await Contact.countDocuments();
+    const sample = await Contact.find().limit(3).select("firstName lastName email companyName").lean();
+    console.log(`[DEBUG] Total contacts: ${count}`);
+    res.json({ success: true, totalContacts: count, sample });
+  } catch (err) {
+    res.status(500).json({ success: false, error: err.message });
+  }
+});
+
+// Debug: Check API response
+app.get("/api/debug/contacts-api", async (req, res) => {
+  try {
+    const contacts = await Contact.find().limit(5).select("firstName lastName email").lean();
+    const count = await Contact.countDocuments();
+    console.log(`[DEBUG API] Returning ${contacts.length} contacts from total ${count}`);
+    res.json({
+      success: true,
+      data: contacts,
+      pagination: { page: 1, limit: 5, total: count, pages: Math.ceil(count / 5) }
+    });
+  } catch (err) {
+    res.status(500).json({ success: false, error: err.message });
+  }
+});
+
+// Direct compliance check route for testing
+app.get("/api/compliance/check/:sequenceType", async (req, res) => {
+  try {
+    const { sequenceType } = req.params;
+    const { checkCompliance } = await import('./services/complianceChecker.js');
+    const result = await checkCompliance(sequenceType);
+    res.json({ success: true, data: result });
+  } catch (err) {
+    console.error('[Compliance Direct] Check error:', err.message);
+    res.status(400).json({ success: false, error: err.message });
+  }
+});
 
 // MongoDB connect
 mongoose.connect("mongodb+srv://mrrishikesh2_db_user:qP9ir3ns0hlQDJ5D@cluster0.axlzsbl.mongodb.net/factoryjet", {
   useNewUrlParser: true,
   useUnifiedTopology: true,
-}).then(() => console.log("✅ MongoDB connected"))
+}).then(() => {
+  console.log("✅ MongoDB connected");
+
+  // Register cron job for scheduled sends
+  const cronSchedule = process.env.CRON_SCHEDULE || '0 * * * *'; // Hourly by default
+  console.log(`📅 Cron scheduled: ${cronSchedule}`);
+
+  cron.schedule(cronSchedule, async () => {
+    const day = new Date().getDay();
+    const hour = new Date().getHours();
+    const sendDays = (process.env.SEND_DAYS || '2,3').split(',').map(Number);
+    const hourStart = parseInt(process.env.SEND_HOUR_START || '7');
+    const hourEnd = parseInt(process.env.SEND_HOUR_END || '11');
+
+    // Check if sending is allowed on this day and time
+    if (!sendDays.includes(day) || hour < hourStart || hour >= hourEnd) {
+      console.log(`[CRON] Outside send window (day=${day}, hour=${hour})`);
+      return;
+    }
+
+    console.log(`[CRON] Running scheduled sends...`);
+    try {
+      const results = await runScheduledSends(parseInt(process.env.DAILY_SEND_LIMIT || '50'));
+      console.log(`[CRON] ✅ Completed: ${results.successful} sent, ${results.failed} failed`);
+    } catch (err) {
+      console.error(`[CRON] ❌ Error:`, err.message);
+    }
+  });
+})
   .catch(err => console.error("❌ MongoDB error:", err));
 
 const upload = multer({ dest: "uploads/" });
@@ -69,19 +162,43 @@ app.post("/upload", upload.single("file"), async (req, res) => {
 
     fs.createReadStream(filePath)
       .pipe(csv())
-      .on("data", (data) => results.push(data))
+      .on("data", (data) => {
+        results.push(data);
+      })
       .on("end", async () => {
-        let inserted = 0, skipped = 0;
+        console.log(`[UPLOAD] CSV parsed: ${results.length} rows found`);
+        if (results.length === 0) {
+          fs.unlinkSync(filePath);
+          return res.json({ success: true, inserted: 0, skipped: 0, total: 0, error: "CSV file is empty" });
+        }
 
-        for (const record of results) {
+        console.log(`[UPLOAD] First row keys:`, Object.keys(results[0]));
+        let inserted = 0, skipped = 0;
+        const skipReasons = {};
+
+        for (let idx = 0; idx < results.length; idx++) {
+          const record = results[idx];
           try {
-            const filter = record["Apollo Contact Id"]
-              ? { apolloContactId: record["Apollo Contact Id"] }
-              : { email: record["Email"] };
+            const email = record["Email"] || record["email"] || "";
+            const apolloId = record["Apollo Contact Id"] || record["apolloContactId"] || "";
+
+            // Skip if no email or Apollo ID
+            if (!email && !apolloId) {
+              skipReasons["noEmailOrApolloId"] = (skipReasons["noEmailOrApolloId"] || 0) + 1;
+              console.log(`[UPLOAD] Row ${idx}: Skipping - no email or Apollo ID`);
+              skipped++;
+              continue;
+            }
+
+            const filter = apolloId
+              ? { apolloContactId: apolloId }
+              : { email: email };
 
             // if exists → skip
             const existing = await Contact.findOne(filter);
             if (existing) {
+              skipReasons["duplicate"] = (skipReasons["duplicate"] || 0) + 1;
+              console.log(`[UPLOAD] Row ${idx}: Skipping - duplicate (${email || apolloId})`);
               skipped++;
               continue;
             }
@@ -166,15 +283,18 @@ app.post("/upload", upload.single("file"), async (req, res) => {
 
             await Contact.create(contactData);
             inserted++;
+            console.log(`[UPLOAD] Row ${idx}: ✅ Inserted - ${email}`);
           } catch (err) {
-            console.error("Error processing record:", err.message);
+            console.error(`[UPLOAD] Row ${idx}: ❌ Error - ${err.message}`);
+            skipReasons["error"] = (skipReasons["error"] || 0) + 1;
             skipped++;
             continue;
           }
         }
 
         fs.unlinkSync(filePath);
-        res.json({ success: true, inserted, skipped, total: results.length });
+        console.log(`[UPLOAD] SUMMARY: Total rows=${results.length}, Inserted=${inserted}, Skipped=${skipped}`, skipReasons);
+        res.json({ success: true, inserted, skipped, total: results.length, skipReasons });
       });
   } catch (error) {
     console.error(error);
@@ -182,7 +302,7 @@ app.post("/upload", upload.single("file"), async (req, res) => {
   }
 });
 
-// Error handler
+// 404 handler (must be after all other routes)
 app.use((req, res) => {
   res.status(404).json({ success: false, message: "Route not found" });
 });

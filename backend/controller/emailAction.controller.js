@@ -40,9 +40,9 @@ export const sendToContacts = async (req, res) => {
         const { subject, body } = await generateColdEmail(contact);
         const bdy = await formate(body, contact, thankq[random]);
 
-        const { seccess } = await sendEmailsNodemailer({ subject, bdy }, contact.email);
+        const { success } = await sendEmailsNodemailer({ subject, bdy }, contact.email);
 
-        if (seccess) {
+        if (success) {
           await Contact.findByIdAndUpdate(contact._id, {
             $set: {
               lastSentDate: new Date(),
@@ -61,6 +61,18 @@ export const sendToContacts = async (req, res) => {
           await new Promise((resolve) => setTimeout(resolve, 15000));
         }
       } catch (err) {
+        // Auto-mark as hard bounce if SMTP error
+        const isHardBounce = err.responseCode >= 500;
+        if (isHardBounce) {
+          await Contact.findByIdAndUpdate(contact._id, {
+            $set: {
+              "flags.bounced": true,
+              "flags.bounceType": "hard",
+              "flags.bounceReason": err.message,
+              "flags.bouncedAt": new Date()
+            }
+          });
+        }
         results.failed.push({ id: contact._id, email: contact.email, error: err.message });
       }
     }
@@ -103,12 +115,12 @@ export const sendFollowup = async (req, res) => {
         const { subject, body } = await generateColdEmail(contact);
         const bdy = await formate(body, contact, thankq[random]);
 
-        const { seccess } = await sendEmailsNodemailer(
+        const { success } = await sendEmailsNodemailer(
           { subject: `Re: ${subject}`, bdy },
           contact.email
         );
 
-        if (seccess) {
+        if (success) {
           await Contact.findByIdAndUpdate(contact._id, {
             $set: {
               lastSentDate: new Date(),
@@ -130,6 +142,18 @@ export const sendFollowup = async (req, res) => {
           await new Promise((resolve) => setTimeout(resolve, 5000));
         }
       } catch (err) {
+        // Auto-mark as hard bounce if SMTP error
+        const isHardBounce = err.responseCode >= 500;
+        if (isHardBounce) {
+          await Contact.findByIdAndUpdate(contact._id, {
+            $set: {
+              "flags.bounced": true,
+              "flags.bounceType": "hard",
+              "flags.bounceReason": err.message,
+              "flags.bouncedAt": new Date()
+            }
+          });
+        }
         results.failed.push({ id: contact._id, email: contact.email, error: err.message });
       }
     }

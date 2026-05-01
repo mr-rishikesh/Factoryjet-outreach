@@ -1,0 +1,6 @@
+First Name,Last Name,Title,Company Name,Email,Email Status,Email Confidence,Industry,Keywords
+John,Doe,Sales Manager,Acme Corp,john.doe@acmecorp.com,valid,95,Technology,sales
+Jane,Smith,Product Manager,TechStart Inc,jane.smith@techstart.com,valid,90,Software,product
+Bob,Johnson,CEO,Global Solutions,bob@globalsolutions.io,valid,85,Consulting,ceo
+Alice,Williams,Marketing Director,Digital Media,alice.w@digitalmedia.co,valid,92,Marketing,director
+Charlie,Brown,Engineer,CloudBase,charlie.brown@cloudbase.dev,valid,88,Technology,engineering

@@ -1,7 +1,37 @@
 // Domains that should never receive outreach emails.
 // Add domains here to block sending — matching is case-insensitive.
 const BLOCKED_DOMAINS = [
-
+  // Personal email providers (consumer)
+  'gmail.com',
+  'yahoo.com',
+  'hotmail.com',
+  'outlook.com',
+  'live.com',
+  'icloud.com',
+  'me.com',
+  'mac.com',
+  'aol.com',
+  'protonmail.com',
+  'proton.me',
+  'tutanota.com',
+  'fastmail.com',
+  'zoho.com',
+  // UK personal
+  'btinternet.com',
+  'sky.com',
+  'talktalk.net',
+  'virginmedia.com',
+  // Disposable/temporary
+  'mailinator.com',
+  'guerrillamail.com',
+  'tempmail.com',
+  'yopmail.com',
+  'trashmail.com',
+  '10minutemail.com',
+  'maildrop.cc',
+  // No-cold-email zones
+  'gov.uk',
+  'gov.in'
 ];
 
 /**

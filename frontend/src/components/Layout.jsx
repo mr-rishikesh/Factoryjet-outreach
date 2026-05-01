@@ -1,5 +1,5 @@
 import { Outlet, Link, useLocation } from "react-router-dom";
-import { LayoutDashboard, Users, Activity, Settings } from "lucide-react";
+import { LayoutDashboard, Mail, BarChart2, Shield, Settings } from "lucide-react";
 
 export default function Layout() {
   const { pathname } = useLocation();
@@ -46,11 +46,14 @@ export default function Layout() {
               <Tab to="/" active={pathname === "/"} icon={<LayoutDashboard className="w-3.5 h-3.5" />}>
                 Overview
               </Tab>
-              <Tab to="/" active={false} icon={<Users className="w-3.5 h-3.5" />}>
-                Contacts
+              <Tab to="/sequences" active={pathname === "/sequences"} icon={<Mail className="w-3.5 h-3.5" />}>
+                Sequences
               </Tab>
-              <Tab to="/" active={false} icon={<Activity className="w-3.5 h-3.5" />}>
-                Activity
+              <Tab to="/analytics" active={pathname === "/analytics"} icon={<BarChart2 className="w-3.5 h-3.5" />}>
+                Analytics
+              </Tab>
+              <Tab to="/compliance" active={pathname === "/compliance"} icon={<Shield className="w-3.5 h-3.5" />}>
+                Compliance
               </Tab>
             </nav>
           )}
