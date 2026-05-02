@@ -198,7 +198,7 @@ export default function EnhancedDashboard() {
       }
 
       if (successful === 0 && failed === 0) {
-        toast.info("No contacts due for email at this time");
+        toast.success("No contacts due for email at this time");
       }
 
       refetch();
