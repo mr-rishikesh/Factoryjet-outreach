@@ -175,11 +175,37 @@ export default function EnhancedDashboard() {
     try {
       setRunningScheduled(true);
       const res = await api.sequences.runScheduled(50);
-      toast.success(`Sent ${res.results.successful} emails, ${res.results.failed} failed`);
+
+      // Check if there were any issues
+      if (!res.success) {
+        toast.error(res.error || "Failed to run scheduled sends");
+        return;
+      }
+
+      const { successful, failed, errors } = res.results || {};
+
+      // Show detailed results
+      if (successful > 0) {
+        toast.success(`✅ Sent ${successful} email${successful !== 1 ? 's' : ''}`);
+      }
+
+      if (failed > 0) {
+        // Show first error if available
+        const errorMsg = errors && errors[0]
+          ? errors[0].error || errors[0]
+          : "Failed to send email";
+        toast.error(`❌ ${failed} failed: ${errorMsg}`);
+      }
+
+      if (successful === 0 && failed === 0) {
+        toast.info("No contacts due for email at this time");
+      }
+
       refetch();
       api.getStats().then((d) => setStats(d.data)).catch(console.error);
     } catch (err) {
-      toast.error("Failed to run scheduled sends: " + err.message);
+      console.error("Scheduled sends error:", err);
+      toast.error("Error running scheduled sends: " + (err.message || "Unknown error"));
     } finally {
       setRunningScheduled(false);
     }
