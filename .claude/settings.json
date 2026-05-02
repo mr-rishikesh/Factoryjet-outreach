@@ -113,7 +113,8 @@
       "Bash(dir 'c:\\\\FactoryJet\\\\email\\\\my emil contact project\\\\DOCUMENTATION')",
       "Bash(grep -n \"Hi \\\\${greetingName}\" backend/email-service/email.body.format.js)",
       "Bash(git add *)",
-      "Bash(git commit *)"
+      "Bash(git commit *)",
+      "Bash(dir \"c:\\\\FactoryJet\\\\email\\\\my emil contact project\\\\backend\\\\services\")"
     ],
     "additionalDirectories": [
       "c:\\Users\\rishi\\.claude\\projects\\c--FactoryJet-email-my-emil-contact-project\\memory",

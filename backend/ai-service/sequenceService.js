@@ -435,22 +435,30 @@ export const getContactsDueForEmail = async (sequenceType = null) => {
  * @returns {Object} Summary of sends
  */
 export const runScheduledSends = async (dailyLimit = 50) => {
-  // Check daily limit
-  const sentToday = await getDailySentCount();
-  const remaining = dailyLimit - sentToday;
-  if (remaining <= 0) {
-    return {
-      totalProcessed: 0,
-      successful: 0,
-      failed: 0,
-      errors: [],
-      limitReached: true,
-      message: `Daily limit (${dailyLimit}) already reached. Sent today: ${sentToday}`
-    };
-  }
+  try {
+    // Check daily limit
+    const sentToday = await getDailySentCount();
+    const remaining = dailyLimit - sentToday;
 
-  const contactsDue = await getContactsDueForEmail();
-  const contactsToProcess = contactsDue.slice(0, remaining);
+    console.log(`[SCHEDULED] Daily sent count: ${sentToday}/${dailyLimit}`);
+
+    if (remaining <= 0) {
+      console.log(`[SCHEDULED] Daily limit reached`);
+      return {
+        totalProcessed: 0,
+        successful: 0,
+        failed: 0,
+        errors: [],
+        limitReached: true,
+        message: `Daily limit (${dailyLimit}) already reached. Sent today: ${sentToday}`
+      };
+    }
+
+    const contactsDue = await getContactsDueForEmail();
+    console.log(`[SCHEDULED] Found ${contactsDue.length} contacts due for email`);
+
+    const contactsToProcess = contactsDue.slice(0, remaining);
+    console.log(`[SCHEDULED] Processing ${contactsToProcess.length} contacts (limit allows ${remaining})`);
 
   const results = {
     totalProcessed: contactsToProcess.length,
@@ -479,7 +487,18 @@ export const runScheduledSends = async (dailyLimit = 50) => {
     await new Promise(resolve => setTimeout(resolve, 10000));
   }
 
+  console.log(`[SCHEDULED] Complete - Sent: ${results.successful}, Failed: ${results.failed}`);
   return results;
+  } catch (err) {
+    console.error(`[SCHEDULED] ERROR:`, err);
+    return {
+      totalProcessed: 0,
+      successful: 0,
+      failed: 0,
+      errors: [{ error: err.message }],
+      message: `Error running scheduled sends: ${err.message}`
+    };
+  }
 };
 
 /**
