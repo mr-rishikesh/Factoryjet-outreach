@@ -9,7 +9,7 @@ import Contact from "../models/Contacts.js";
 import { generateColdEmail } from "./groqservice.js";
 import { helpers } from "./prompt.js";
 import { sendEmailsNodemailer } from '../email-service/index.js';
-import { formate } from '../email-service/email.body.format.js';
+import { formate, replaceTokens } from '../email-service/email.body.format.js';
 import { validateSend, getDailySentCount } from '../services/preSendValidator.js';
 import { logEmailSent, logEmailFailed } from '../services/auditLogger.js';
 import { isSuppressed } from '../services/suppressionManager.js';
@@ -48,7 +48,11 @@ export const initializeSequence = async (contactId, sequenceType) => {
 
   // Check if contact already has an active sequence
   if (contact.emailSequence?.sequenceStatus === 'active') {
-    throw new Error(`Contact already has an active sequence: ${contact.emailSequence.sequenceType}`);
+    const currentSequence = contact.emailSequence.sequenceType === 'A'
+      ? 'Sequence A (AI Agent Development → US Shopify DTC Brands)'
+      : 'Sequence B (AI SEO / GEO → UK Founder-Led SMBs)';
+    const currentEmail = contact.emailSequence.nextEmailNumber;
+    throw new Error(`❌ Cannot start new sequence. Contact is already in ${currentSequence} (next email: #${currentEmail}). Please pause or complete the current sequence first.`);
   }
 
   // Calculate scheduled dates (Day 1→4→8→13→19)
@@ -176,21 +180,35 @@ export const sendNextEmail = async (contactId) => {
   contact.emailSequence.currentEmailNumber = emailNumber;
   contact.emailSequence.lastEmailSentAt = now;
 
-  // Schedule next email
+  // Schedule next email using atomic update
+  const updateData = {
+    'emailSequence.emailHistory': contact.emailSequence.emailHistory,
+    'emailSequence.currentEmailNumber': emailNumber,
+    'emailSequence.lastEmailSentAt': now
+  };
+
   if (emailNumber < SEQUENCE_CONFIG[seq.sequenceType].maxEmails) {
     const nextEmailNumber = emailNumber + 1;
     const nextIntervalDays = SEQUENCE_CONFIG[seq.sequenceType].emailIntervals[nextEmailNumber - 1];
-    contact.emailSequence.nextEmailNumber = nextEmailNumber;
-    contact.emailSequence.nextEmailScheduledFor = new Date(
+    updateData['emailSequence.nextEmailNumber'] = nextEmailNumber;
+    updateData['emailSequence.nextEmailScheduledFor'] = new Date(
       seq.sequenceStartedAt.getTime() + nextIntervalDays * 24 * 60 * 60 * 1000
     );
   } else {
     // All emails sent
-    contact.emailSequence.nextEmailNumber = SEQUENCE_CONFIG[seq.sequenceType].maxEmails + 1;
-    contact.emailSequence.sequenceStatus = 'completed';
+    updateData['emailSequence.nextEmailNumber'] = SEQUENCE_CONFIG[seq.sequenceType].maxEmails + 1;
+    updateData['emailSequence.sequenceStatus'] = 'completed';
   }
 
-  await contact.save();
+  // Use atomic update to prevent race conditions
+  const updatedContact = await Contact.findByIdAndUpdate(
+    contactId,
+    { $set: updateData },
+    { new: true, runValidators: true }
+  );
+
+  // Update in-memory contact for sending
+  contact = updatedContact;
 
   // Send the email
   const unsubUrl = (seq.sequenceType === 'B' || emailNumber >= 2)
@@ -200,47 +218,77 @@ export const sendNextEmail = async (contactId) => {
   const randomThanks = 'Thanks';
   const formattedBody = await formate(email.body, contact, randomThanks, unsubUrl);
 
+  // Replace tokens in subject too
+  const formattedSubject = replaceTokens(email.subject, contact);
+
   const messageId = `<${Date.now()}-${contact._id}@factoryjet.com>`;
   const listUnsubscribeHeader = unsubUrl ? `<${unsubUrl}>` : '';
 
   try {
     const sendResult = await sendEmailsNodemailer(
-      { subject: email.subject, bdy: formattedBody, messageId, listUnsubscribeHeader },
+      { subject: formattedSubject, bdy: formattedBody, messageId, listUnsubscribeHeader },
       contact.email
     );
 
     if (sendResult.success) {
-      // Update delivery status to 'sent'
-      const historyEntry = contact.emailSequence.emailHistory[contact.emailSequence.emailHistory.length - 1];
-      historyEntry.deliveryStatus = 'sent';
-      contact.emailStats.emailsSent += 1;
-      await contact.save();
+      // Update delivery status to 'sent' using atomic update
+      // Update by email number to avoid array index issues
+      await Contact.findByIdAndUpdate(
+        contactId,
+        {
+          $set: {
+            'emailSequence.emailHistory.$[elem].deliveryStatus': 'sent'
+          },
+          $inc: { 'emailStats.emailsSent': 1 }
+        },
+        {
+          arrayFilters: [{ 'elem.emailNumber': emailNumber }],
+          new: true,
+          runValidators: true
+        }
+      );
+
+      // Refresh contact for return value and logging
+      const refreshedContact = await Contact.findById(contactId);
 
       // Log email sent event (fire-and-forget)
-      logEmailSent(contact, emailNumber, seq.sequenceType, email.subject).catch(console.error);
+      logEmailSent(refreshedContact, emailNumber, seq.sequenceType, email.subject).catch(console.error);
 
       return {
         contactId,
-        sequenceType: seq.sequenceType,
+        sequenceType: refreshedContact.emailSequence.sequenceType,
         emailNumber,
         subject: email.subject,
         body: email.body,
         variant: variantIndex,
         sentAt: now,
-        nextEmailScheduledFor: contact.emailSequence.nextEmailScheduledFor,
-        sequenceProgress: `${emailNumber}/${SEQUENCE_CONFIG[seq.sequenceType].maxEmails}`
+        nextEmailScheduledFor: refreshedContact.emailSequence.nextEmailScheduledFor,
+        sequenceProgress: `${emailNumber}/${SEQUENCE_CONFIG[refreshedContact.emailSequence.sequenceType].maxEmails}`
       };
     } else {
       throw new Error(sendResult.error || 'Failed to send email');
     }
   } catch (err) {
-    // Update delivery status to 'failed'
-    const historyEntry = contact.emailSequence.emailHistory[contact.emailSequence.emailHistory.length - 1];
-    historyEntry.deliveryStatus = 'failed';
-    await contact.save();
+    // Update delivery status to 'failed' using atomic update
+    await Contact.findByIdAndUpdate(
+      contactId,
+      {
+        $set: {
+          'emailSequence.emailHistory.$[elem].deliveryStatus': 'failed'
+        }
+      },
+      {
+        arrayFilters: [{ 'elem.emailNumber': emailNumber }],
+        new: true,
+        runValidators: true
+      }
+    );
+
+    // Refresh contact for logging
+    const refreshedContact = await Contact.findById(contactId);
 
     // Log email failed event (fire-and-forget)
-    logEmailFailed(contact, emailNumber, seq.sequenceType, err.message).catch(console.error);
+    logEmailFailed(refreshedContact, emailNumber, seq.sequenceType, err.message).catch(console.error);
 
     throw new Error(`Failed to send email: ${err.message}`);
   }

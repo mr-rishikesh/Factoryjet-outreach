@@ -101,7 +101,18 @@
       "Bash(mv AI_FALLBACK_*.* DOCUMENTATION/)",
       "Bash(mv GREETING_*.* DOCUMENTATION/)",
       "Bash(mv PHASE_*.* DOCUMENTATION/)",
-      "Bash(mv FINAL_STATUS_*.* DOCUMENTATION/)"
+      "Bash(mv FINAL_STATUS_*.* DOCUMENTATION/)",
+      "Bash(node -c ai-service/sequenceService.js)",
+      "Bash(node -c controller/emailAction.controller.js)",
+      "Bash(node -c email-service/email.body.format.js)",
+      "Bash(node -c ai-service/groqservice.js)",
+      "Bash(node -c src/pages/EnhancedDashboard.jsx)",
+      "Bash(node /tmp/error_display_test.js)",
+      "Bash(node -c ai-service/prompt.js)"
+    ],
+    "additionalDirectories": [
+      "c:\\Users\\rishi\\.claude\\projects\\c--FactoryJet-email-my-emil-contact-project\\memory",
+      "\\tmp"
     ]
   }
 }

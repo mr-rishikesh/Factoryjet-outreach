@@ -106,9 +106,7 @@ const SEQUENCE_A = {
     wordLimit: 80,
     preview: "a number most {{industry}} founders don't track",
     subjectVariants: SUBJECT_LINES.A.email1,
-    template: `{{first_name}}
-
-Most brands doing $2M–$10M on Shopify spend $15K–$25K monthly on customer support - mostly order tracking, returns, and size or product queries - without realising it's that high until they add it up.
+    template: `Most brands doing $2M–$10M on Shopify spend $15K–$25K monthly on customer support - mostly order tracking, returns, and size or product queries - without realising it's that high until they add it up.
 
 We helped a brand in your space resolve 70% of those tickets automatically in 90 days, without replacing their helpdesk or retraining their team.
 
@@ -123,9 +121,7 @@ Worth a 15-minute Loom showing how it works?`,
     wordLimit: 120,
     preview: "same Shopify setup, no helpdesk change",
     subjectVariants: SUBJECT_LINES.A.email2,
-    template: `{{first_name}} —
-
-Sharing a result from a project we wrapped earlier this year.
+    template: `Sharing a result from a project we wrapped earlier this year.
 
 A {{industry}} brand on Shopify Plus was handling around 2,800 support tickets monthly — mostly order tracking, returns, and product queries. Their CS team was stretched heading into a product launch.
 
@@ -144,9 +140,7 @@ Happy to walk you through the build — 20 minutes on a call or a Loom, whicheve
     wordLimit: 120,
     preview: "it's a structural change, not a tool swap",
     subjectVariants: SUBJECT_LINES.A.email3,
-    template: `{{first_name}} —
-
-Something we're seeing consistently across {{industry}} brands on Shopify right now:
+    template: `Something we're seeing consistently across {{industry}} brands on Shopify right now:
 
 The ones pulling ahead on retention aren't adding more CS headcount — they're treating AI as the first-response layer and keeping their human team for escalations, VIP customers, and win-back conversations.
 
@@ -165,9 +159,7 @@ The brands that set this up before their next major launch or sale period are th
     wordLimit: 120,
     preview: "two questions",
     subjectVariants: SUBJECT_LINES.A.email4,
-    template: `{{first_name}} —
-
-Sent a few notes about AI support for {{company}} — wanted to ask directly rather than keep guessing.
+    template: `Sent a few notes about AI support for {{company}} — wanted to ask directly rather than keep guessing.
 
 Two quick questions:
 
@@ -184,9 +176,7 @@ Either answer helps me know whether it's worth continuing the conversation or le
     wordLimit: 60,
     preview: "last note from me",
     subjectVariants: SUBJECT_LINES.A.email5,
-    template: `{{first_name}} —
-
-Sent a few notes over the past few weeks — nothing back, so I'll assume the timing isn't right for {{company}}.
+    template: `Sent a few notes over the past few weeks — nothing back, so I'll assume the timing isn't right for {{company}}.
 
 Not going to keep filling your inbox.
 
@@ -216,9 +206,7 @@ const SEQUENCE_B = {
     wordLimit: 80,
     preview: "something shifted on Google UK",
     subjectVariants: SUBJECT_LINES.B.email1,
-    template: `{{first_name}} —
-
-Most {{industry}} businesses in the UK are seeing organic search traffic behave differently in 2026 — not because their rankings dropped, but because Google is now showing AI-generated summaries above position 1 on a growing share of searches.
+    template: `Most {{industry}} businesses in the UK are seeing organic search traffic behave differently in 2026 — not because their rankings dropped, but because Google is now showing AI-generated summaries above position 1 on a growing share of searches.
 
 Seer Interactive measured a 61% drop in clicks on searches where these summaries appear. Position 1 no longer means what it did 18 months ago.
 
@@ -235,9 +223,7 @@ Happy to put together a one-page snapshot of where {{company}} stands on this. W
     wordLimit: 120,
     preview: "traffic held flat while competitors dropped",
     subjectVariants: SUBJECT_LINES.B.email2,
-    template: `{{first_name}} —
-
-Sharing a result from a UK client in {{industry}} we started working with late last year.
+    template: `Sharing a result from a UK client in {{industry}} we started working with late last year.
 
 They were losing clicks to AI summaries on 14 of their top 20 search terms. We restructured their content to get cited inside those summaries — targeting ChatGPT, Perplexity, and Google's AI Overviews specifically.
 
@@ -256,9 +242,7 @@ Worth 20 minutes to show you what this looks like for {{company}}?`,
     wordLimit: 120,
     preview: "pulled a quick check this morning",
     subjectVariants: SUBJECT_LINES.B.email3,
-    template: `{{first_name}} —
-
-Ran a quick check on how {{company}} appears across AI search platforms — ChatGPT, Perplexity, and Google's AI Overviews — for the kind of queries your buyers run.
+    template: `Ran a quick check on how {{company}} appears across AI search platforms — ChatGPT, Perplexity, and Google's AI Overviews — for the kind of queries your buyers run.
 
 For most {{industry}} businesses at your stage, the pattern is the same: strong traditional search presence, very little AI citation. The two don't automatically go together.
 
@@ -275,9 +259,7 @@ No obligation — happy to send it over if useful. Want me to?`,
     wordLimit: 60,
     preview: "one question",
     subjectVariants: SUBJECT_LINES.B.email4,
-    template: `{{first_name}} —
-
-Three notes about AI search visibility for {{company}} — going to ask directly rather than keep guessing.
+    template: `Three notes about AI search visibility for {{company}} — going to ask directly rather than keep guessing.
 
 Is this something on your radar for 2026, or is it not a priority right now?
 
@@ -292,9 +274,7 @@ Either answer is genuinely useful — helps me know whether to stay in touch or 
     wordLimit: 60,
     preview: "no more emails after this one",
     subjectVariants: SUBJECT_LINES.B.email5,
-    template: `{{first_name}} —
-
-Last note — I don't want to be another name filling your inbox.
+    template: `Last note — I don't want to be another name filling your inbox.
 
 If AI search visibility becomes something {{company}} wants to look at later this year, just reply here and I'll pick it back up.`,
     cta: "None (door fully open)",
@@ -394,19 +374,27 @@ ${email.template}
 CONTACT INFORMATION:
 ${JSON.stringify(contact, null, 2)}
 
-INSTRUCTIONS:
+CRITICAL INSTRUCTIONS - DO NOT VIOLATE THESE:
+
+🚫 DO NOT include greeting or name at the start (Hi {{first_name}}, or {{first_name}},)
+   → The system will add "Hi FirstName," automatically
+   → Start DIRECTLY with the email content
+   → Only use {{first_name}}, {{company}}, {{industry}} tokens inside the body
+
+CONTENT INSTRUCTIONS:
 1. Fill the three safe tokens ONLY: {{first_name}}, {{company}}, {{industry}}
 2. Do NOT add other tokens or personalization beyond these three
-3. Keep word count under ${email.wordLimit} words
-4. Never use these forbidden words: ${FORBIDDEN_WORDS.slice(0, 10).join(', ')} (full list: see forbidden words)
-5. No exclamation marks in subject line
-6. No ALL CAPS
-7. Plain text only — no markdown, no HTML
-8. Single CTA only: ${email.cta}
-9. Return ONLY valid JSON like this:
+3. Start directly with content (NO greeting, NO "Hi", NO name)
+4. Keep word count under ${email.wordLimit} words
+5. Never use these forbidden words: ${FORBIDDEN_WORDS.slice(0, 10).join(', ')} (full list: see forbidden words)
+6. No exclamation marks in subject line
+7. No ALL CAPS in subject
+8. Plain text only — no markdown, no HTML
+9. Single CTA only: ${email.cta}
+10. Return ONLY valid JSON:
 {
   "subject": "${subjectVariant}",
-  "body": "filled template text here"
+  "body": "Start directly with content (no greeting). Use {{first_name}}, {{company}}, {{industry}} only."
 }
 
 FORBIDDEN WORDS (remove immediately if present):

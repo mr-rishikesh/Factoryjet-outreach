@@ -1,6 +1,6 @@
 import Contact from "../models/Contacts.js";
 import { generateColdEmail } from "../ai-service/groqservice.js";
-import { formate } from "../email-service/email.body.format.js";
+import { formate, replaceTokens } from "../email-service/email.body.format.js";
 import { sendEmailsNodemailer } from "../email-service/index.js";
 import { isBlockedDomain } from "../utils/blockedDomains.js";
 
@@ -38,9 +38,15 @@ export const sendToContacts = async (req, res) => {
       try {
         const random = Math.floor(Math.random() * thankq.length);
         const { subject, body } = await generateColdEmail(contact);
-        const bdy = await formate(body, contact, thankq[random]);
 
-        const { success } = await sendEmailsNodemailer({ subject, bdy }, contact.email);
+        // Add unsubscribe link for email 2+ (consistent with sequence emails)
+        const unsubUrl = `${process.env.BASE_URL || 'http://localhost:5000'}/unsubscribe?token=${contact._id}`;
+        const bdy = await formate(body, contact, thankq[random], unsubUrl);
+
+        // Replace tokens in subject
+        const formattedSubject = replaceTokens(subject, contact);
+
+        const { success } = await sendEmailsNodemailer({ subject: formattedSubject, bdy }, contact.email);
 
         if (success) {
           await Contact.findByIdAndUpdate(contact._id, {
@@ -49,7 +55,7 @@ export const sendToContacts = async (req, res) => {
               outreachStatus: contact.outreachStatus === "NOT_SENT" ? "SENT" : contact.outreachStatus,
             },
             $inc: { "emailStats.emailsSent": 1 },
-            $push: { emails: { type: "outreach", subject, sentAt: new Date() } },
+            $push: { emails: { type: "outreach", subject: formattedSubject, sentAt: new Date() } },
           });
           results.sent.push({ id: contact._id, email: contact.email });
         } else {
@@ -113,10 +119,16 @@ export const sendFollowup = async (req, res) => {
       try {
         const random = Math.floor(Math.random() * thankq.length);
         const { subject, body } = await generateColdEmail(contact);
-        const bdy = await formate(body, contact, thankq[random]);
+
+        // Add unsubscribe link for all followup emails
+        const unsubUrl = `${process.env.BASE_URL || 'http://localhost:5000'}/unsubscribe?token=${contact._id}`;
+        const bdy = await formate(body, contact, thankq[random], unsubUrl);
+
+        // Replace tokens in subject
+        const formattedSubject = replaceTokens(subject, contact);
 
         const { success } = await sendEmailsNodemailer(
-          { subject: `Re: ${subject}`, bdy },
+          { subject: `Re: ${formattedSubject}`, bdy },
           contact.email
         );
 
@@ -131,7 +143,7 @@ export const sendFollowup = async (req, res) => {
               "followup.followupCount": 1,
               "emailStats.emailsSent": 1,
             },
-            $push: { emails: { type: "followup", subject: `Re: ${subject}`, sentAt: new Date() } },
+            $push: { emails: { type: "followup", subject: `Re: ${formattedSubject}`, sentAt: new Date() } },
           });
           results.sent.push({ id: contact._id, email: contact.email });
         } else {

@@ -137,6 +137,7 @@ export default function EnhancedDashboard() {
       setInitializingSequence(true);
       let successCount = 0;
       let failCount = 0;
+      const errors = [];
 
       for (const contactId of selected) {
         try {
@@ -144,12 +145,20 @@ export default function EnhancedDashboard() {
           successCount++;
         } catch (err) {
           failCount++;
+          errors.push(err.message);
           console.error(`Failed for ${contactId}:`, err.message);
         }
       }
 
-      toast.success(`Started ${successCount} sequence${successCount !== 1 ? 's' : ''} (${sequenceType})`);
-      if (failCount > 0) toast.error(`Failed to start ${failCount} sequence${failCount !== 1 ? 's' : ''}`);
+      if (successCount > 0) {
+        toast.success(`Started ${successCount} sequence${successCount !== 1 ? 's' : ''} (${sequenceType})`);
+      }
+
+      if (failCount > 0) {
+        // Show first error with details
+        const firstError = errors[0];
+        toast.error(firstError || `Failed to start ${failCount} sequence${failCount !== 1 ? 's' : ''}`);
+      }
 
       setSelected([]);
       setShowSequenceModal(false);

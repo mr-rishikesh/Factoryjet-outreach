@@ -71,6 +71,7 @@ export async function generateColdEmail(contactData, sequenceType = 'A', emailNu
     const firstName = contactData.firstName || "there";
 
     // Sequence-specific fallback templates
+    const industry = contactData.industry || "your industry";
     const fallbackTemplates = {
       A: {
         subject: `${company}'s support costs`,
@@ -78,7 +79,7 @@ export async function generateColdEmail(contactData, sequenceType = 'A', emailNu
       },
       B: {
         subject: `${company}'s search traffic`,
-        body: `${firstName},\n\nMost {{industry}} businesses in the UK are seeing organic search traffic shift in 2026 — not because rankings dropped, but because Google now shows AI summaries above position 1.\n\nSeer Interactive measured 61% drop in clicks where these appear.\n\nHappy to pull together a snapshot of where you stand. Worth it?`
+        body: `${firstName},\n\nMost ${industry} businesses in the UK are seeing organic search traffic shift in 2026 — not because rankings dropped, but because Google now shows AI summaries above position 1.\n\nSeer Interactive measured 61% drop in clicks where these appear.\n\nHappy to pull together a snapshot of where you stand. Worth it?`
       }
     };
 
