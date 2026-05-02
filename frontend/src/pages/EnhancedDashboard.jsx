@@ -40,6 +40,9 @@ export default function EnhancedDashboard() {
   const [runningScheduled, setRunningScheduled] = useState(false);
   const [showEmailEditor, setShowEmailEditor] = useState(false);
   const [emailDraft, setEmailDraft] = useState({ subject: "", body: "" });
+  const [showChangeEmail, setShowChangeEmail] = useState(false);
+  const [emailChanges, setEmailChanges] = useState({});
+  const [changingEmails, setChangingEmails] = useState(false);
   const debounceRef = useRef(null);
 
   useEffect(() => {
@@ -173,6 +176,50 @@ export default function EnhancedDashboard() {
     }
   };
 
+  // Change Email for Selected
+  const handleChangeEmails = async () => {
+    if (selected.length === 0) {
+      toast.error("Please select at least one contact");
+      return;
+    }
+
+    const emptyChanges = selected.filter(id => !emailChanges[id]?.trim()).length;
+    if (emptyChanges > 0) {
+      toast.error(`Please enter new email for ${emptyChanges} contact${emptyChanges !== 1 ? 's' : ''}`);
+      return;
+    }
+
+    try {
+      setChangingEmails(true);
+      let successCount = 0;
+      let failCount = 0;
+
+      for (const contactId of selected) {
+        try {
+          const newEmail = emailChanges[contactId];
+          if (newEmail && newEmail.trim()) {
+            await api.updateContact(contactId, { email: newEmail.trim() });
+            successCount++;
+          }
+        } catch (err) {
+          failCount++;
+          console.error(`Failed for ${contactId}:`, err.message);
+        }
+      }
+
+      toast.success(`Updated ${successCount} email${successCount !== 1 ? 's' : ''} address${failCount > 0 ? `, ${failCount} failed` : ''}`);
+      setSelected([]);
+      setEmailChanges({});
+      setShowChangeEmail(false);
+      refetch();
+      api.getStats().then((d) => setStats(d.data)).catch(console.error);
+    } catch (err) {
+      toast.error("Failed to change emails: " + err.message);
+    } finally {
+      setChangingEmails(false);
+    }
+  };
+
   // Send Followup to Selected
   const handleSendFollowup = async () => {
     if (selected.length === 0) {
@@ -223,7 +270,7 @@ export default function EnhancedDashboard() {
       {stats && <StatsBar stats={stats} />}
 
       {/* Action Buttons Bar */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-3">
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-6 gap-3">
         <button
           onClick={handleRunScheduled}
           disabled={runningScheduled}
@@ -232,6 +279,16 @@ export default function EnhancedDashboard() {
         >
           <Zap className="w-4 h-4" />
           {runningScheduled ? "Running..." : "Run Scheduled"}
+        </button>
+
+        <button
+          onClick={() => setShowChangeEmail(true)}
+          disabled={selected.length === 0}
+          className="inline-flex items-center justify-center gap-2 h-10 px-4 text-sm font-semibold bg-cyan-600 text-white rounded-lg hover:bg-cyan-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+          title={`Change email for ${selected.length} contact${selected.length !== 1 ? 's' : ''}`}
+        >
+          <Mail className="w-4 h-4" />
+          Change Email
         </button>
 
         <button
@@ -382,6 +439,72 @@ export default function EnhancedDashboard() {
         onPageChange={setPage}
         onSort={setSort}
       />
+
+      {/* Change Email Modal */}
+      {showChangeEmail && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/70 backdrop-blur-sm p-4">
+          <div className="bg-[#0d0d0d] border border-[#262626] rounded-lg shadow-2xl w-full max-w-2xl p-6 space-y-4 max-h-[90vh] overflow-y-auto">
+            <div>
+              <h3 className="text-lg font-semibold text-white">Change Email Addresses</h3>
+              <p className="text-sm text-gray-400 mt-1">
+                Update email for {selected.length} contact{selected.length !== 1 ? 's' : ''}
+              </p>
+            </div>
+
+            <div className="space-y-3 bg-[#161616] rounded-lg p-4 border border-[#262626]">
+              {contacts
+                .filter(c => selected.includes(c._id))
+                .map((contact) => (
+                  <div key={contact._id} className="space-y-2">
+                    <label className="block text-sm font-medium text-white">
+                      {contact.firstName} {contact.lastName}
+                    </label>
+                    <div className="flex gap-2">
+                      <input
+                        type="email"
+                        value={emailChanges[contact._id] || contact.email || ""}
+                        onChange={(e) =>
+                          setEmailChanges({
+                            ...emailChanges,
+                            [contact._id]: e.target.value,
+                          })
+                        }
+                        placeholder="Enter new email address..."
+                        className="flex-1 h-10 px-3 text-sm bg-[#0d0d0d] border border-[#262626] rounded-lg text-white placeholder:text-[#52525b] focus:outline-none focus:border-[#3f3f3f] focus:ring-1 focus:ring-[#3f3f3f] transition-colors"
+                      />
+                      <span className="text-xs text-gray-500 pt-2">Current: {contact.email}</span>
+                    </div>
+                  </div>
+                ))}
+            </div>
+
+            <div className="bg-[#161616] rounded-lg p-3 border border-[#262626]">
+              <p className="text-xs text-gray-400">
+                <span className="font-semibold text-yellow-400">⚠️ Important:</span> Changing email addresses will update contact records. Ensure new addresses are valid.
+              </p>
+            </div>
+
+            <div className="flex gap-3 pt-4">
+              <button
+                onClick={() => {
+                  setShowChangeEmail(false);
+                  setEmailChanges({});
+                }}
+                className="flex-1 px-4 py-2 bg-[#161616] text-gray-400 rounded-lg hover:text-white transition-colors"
+              >
+                Cancel
+              </button>
+              <button
+                onClick={handleChangeEmails}
+                disabled={changingEmails}
+                className="flex-1 px-4 py-2 bg-white text-black rounded-lg hover:bg-gray-100 disabled:opacity-50 disabled:cursor-not-allowed font-medium transition-colors"
+              >
+                {changingEmails ? "Updating..." : `Update ${selected.length}`}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
 
       {/* Upload Modal */}
       {showUpload && (
