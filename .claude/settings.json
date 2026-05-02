@@ -114,7 +114,8 @@
       "Bash(grep -n \"Hi \\\\${greetingName}\" backend/email-service/email.body.format.js)",
       "Bash(git add *)",
       "Bash(git commit *)",
-      "Bash(dir \"c:\\\\FactoryJet\\\\email\\\\my emil contact project\\\\backend\\\\services\")"
+      "Bash(dir \"c:\\\\FactoryJet\\\\email\\\\my emil contact project\\\\backend\\\\services\")",
+      "Bash(node -e \"import\\('dotenv/config'\\).then\\(\\(\\) => console.log\\('MONGO_URI:', process.env.MONGO_URI\\)\\)\")"
     ],
     "additionalDirectories": [
       "c:\\Users\\rishi\\.claude\\projects\\c--FactoryJet-email-my-emil-contact-project\\memory",

@@ -93,7 +93,9 @@ app.get("/api/compliance/check/:sequenceType", async (req, res) => {
 });
 
 // MongoDB connect
-mongoose.connect("mongodb+srv://mrrishikesh2_db_user:qP9ir3ns0hlQDJ5D@cluster0.axlzsbl.mongodb.net/factoryjet", {
+const mongoUri = process.env.MONGO_URI || 'mongodb://127.0.0.1:27017/emil_contact';
+
+mongoose.connect(mongoUri, {
   useNewUrlParser: true,
   useUnifiedTopology: true,
 }).then(() => {
