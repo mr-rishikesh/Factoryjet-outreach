@@ -60,99 +60,99 @@ export default function Dashboard() {
   const activeFilterCount = Object.keys(filters).length;
 
   return (
-    <div className="space-y-6">
-      {/* Page Header */}
-      <div className="flex flex-col sm:flex-row sm:items-end sm:justify-between gap-4">
-        <div>
-          <h1 className="text-[26px] font-semibold tracking-tight text-white leading-tight">Outreach</h1>
-          <p className="text-[13px] text-[#a1a1aa] mt-1.5 leading-relaxed">
-            Manage prospects, automate cold emails, and track replies — all in one place.
-          </p>
+    <div className="space-y-8">
+      {/* Page Header with gradient effect */}
+      <div className="space-y-4">
+        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-6">
+          <div className="space-y-2">
+            <h1 className="text-4xl font-bold tracking-tight text-white">Outreach</h1>
+            <p className="text-sm text-[#71717a] max-w-xl">
+              Manage prospects, automate cold emails, and track replies — all in one place.
+            </p>
+          </div>
+          <button
+            onClick={() => setShowUpload(true)}
+            className="inline-flex items-center justify-center gap-2 h-10 px-4 text-sm font-semibold bg-white text-black rounded-lg hover:bg-gray-100 transition-all duration-200 active:scale-95 self-start sm:self-auto shrink-0 shadow-sm hover:shadow-md"
+          >
+            <Upload className="w-4 h-4" />
+            Import CSV
+          </button>
         </div>
-        <button
-          onClick={() => setShowUpload(true)}
-          className="inline-flex items-center gap-2 h-9 px-3.5 text-[13px] font-medium bg-white text-black rounded-md hover:bg-[#e5e5e5] transition-colors self-start sm:self-auto shrink-0"
-        >
-          <Upload className="w-3.5 h-3.5" />
-          Import CSV
-        </button>
       </div>
 
       {/* Stats */}
       {stats && <StatsBar stats={stats} />}
 
-      {/* Toolbar */}
-      <div className="bg-[#0a0a0a] border border-[#1a1a1a] rounded-lg">
-        <div className="flex items-center gap-1 p-1.5">
-          {/* Search */}
-          <form onSubmit={handleSearch} className="flex-1 min-w-0">
-            <div className="relative">
-              <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-[#525252] pointer-events-none" strokeWidth={2} />
-              <input
-                type="text"
-                placeholder="Search by name, email, or company..."
-                value={searchInput}
-                onChange={handleSearchChange}
-                className="w-full h-9 pl-9 pr-3 text-[13px] bg-transparent border-0 text-[#ededed] placeholder:text-[#52525b] focus:outline-none focus:ring-0 rounded-md"
-              />
-            </div>
-          </form>
-
-          {/* Divider */}
-          <div className="w-px h-5 bg-[#1f1f1f] shrink-0" />
-
-          {/* Filter Toggle */}
-          <button
-            onClick={() => setShowFilters(!showFilters)}
-            className={`inline-flex items-center gap-2 h-9 px-3 text-[13px] font-medium rounded-md transition-colors shrink-0 ${
-              showFilters || activeFilterCount > 0
-                ? "bg-[#161616] text-white"
-                : "text-[#a1a1aa] hover:text-white hover:bg-[#161616]"
-            }`}
-          >
-            <SlidersHorizontal className="w-3.5 h-3.5" />
-            <span className="hidden sm:inline leading-none">Filters</span>
-            {activeFilterCount > 0 && (
-              <span className="inline-flex items-center justify-center bg-white text-black text-[10px] font-mono font-semibold rounded h-4 min-w-4 px-1 leading-none">
-                {activeFilterCount}
-              </span>
-            )}
-          </button>
-
-          {/* Clear Filters */}
-          {activeFilterCount > 0 && (
-            <button
-              onClick={() => { clearFilters(); setShowFilters(false); }}
-              className="inline-flex items-center gap-1.5 h-9 px-2.5 text-[13px] font-medium text-[#71717a] hover:text-red-400 transition-colors shrink-0"
-            >
-              <X className="w-3.5 h-3.5" />
-              <span className="hidden sm:inline leading-none">Clear</span>
-            </button>
-          )}
-
-          {/* Page Size */}
-          <select
-            value={pagination.limit}
-            onChange={(e) => setLimit(Number(e.target.value))}
-            className="appearance-none h-9 pl-3 pr-7 text-[13px] bg-transparent border border-[#262626] rounded-md text-[#a1a1aa] cursor-pointer hover:border-[#3f3f3f] hover:text-white transition-colors shrink-0 bg-[url('data:image/svg+xml;utf8,<svg xmlns=%22http://www.w3.org/2000/svg%22 width=%2210%22 height=%2210%22 viewBox=%220 0 24 24%22 fill=%22none%22 stroke=%22%23a1a1aa%22 stroke-width=%222%22 stroke-linecap=%22round%22 stroke-linejoin=%22round%22><polyline points=%226 9 12 15 18 9%22/></svg>')] bg-no-repeat bg-[right_8px_center] bg-[length:10px_10px]"
-          >
-            <option value={10}>10</option>
-            <option value={25}>25</option>
-            <option value={50}>50</option>
-            <option value={100}>100</option>
-          </select>
-        </div>
-
-        {showFilters && (
-          <div className="border-t border-[#1a1a1a]">
-            <FilterPanel
-              filters={filters}
-              onApply={(f) => { applyFilters(f); setShowFilters(false); }}
-              onClear={clearFilters}
+      {/* Toolbar with Search and Filters */}
+      <div className="flex flex-col sm:flex-row gap-3 items-start sm:items-center">
+        {/* Search Bar */}
+        <form onSubmit={handleSearch} className="flex-1 min-w-0 w-full sm:w-auto">
+          <div className="relative">
+            <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-[#52525b] pointer-events-none" strokeWidth={2} />
+            <input
+              type="text"
+              placeholder="Search by name, email, or company..."
+              value={searchInput}
+              onChange={handleSearchChange}
+              className="w-full h-10 pl-10 pr-4 text-sm bg-[#0d0d0d] border border-[#262626] text-white placeholder:text-[#52525b] focus:outline-none focus:border-[#3f3f3f] focus:ring-1 focus:ring-[#3f3f3f] rounded-lg transition-colors"
             />
           </div>
+        </form>
+
+        {/* Divider */}
+        <div className="w-px h-5 bg-[#1f1f1f] shrink-0 hidden sm:block" />
+
+        {/* Filter Toggle */}
+        <button
+          onClick={() => setShowFilters(!showFilters)}
+          className={`inline-flex items-center gap-2 h-10 px-3 text-sm font-medium rounded-lg transition-colors shrink-0 ${
+            showFilters || activeFilterCount > 0
+              ? "bg-[#161616] text-white border border-[#262626]"
+              : "text-[#a1a1aa] hover:text-white hover:bg-[#161616] border border-[#262626]"
+          }`}
+        >
+          <SlidersHorizontal className="w-4 h-4" />
+          <span className="hidden sm:inline">Filters</span>
+          {activeFilterCount > 0 && (
+            <span className="inline-flex items-center justify-center bg-white text-black text-xs font-mono font-semibold rounded h-5 min-w-5 px-1.5">
+              {activeFilterCount}
+            </span>
+          )}
+        </button>
+
+        {/* Clear Filters */}
+        {activeFilterCount > 0 && (
+          <button
+            onClick={() => { clearFilters(); setShowFilters(false); }}
+            className="inline-flex items-center gap-1.5 h-10 px-3 text-sm font-medium text-[#71717a] hover:text-red-400 hover:bg-red-500/10 border border-[#262626] rounded-lg transition-colors shrink-0"
+          >
+            <X className="w-4 h-4" />
+            <span className="hidden sm:inline">Clear</span>
+          </button>
         )}
+
+        {/* Page Size */}
+        <select
+          value={pagination.limit}
+          onChange={(e) => setLimit(Number(e.target.value))}
+          className="h-10 px-3 text-sm bg-[#0d0d0d] border border-[#262626] rounded-lg text-[#a1a1aa] cursor-pointer hover:border-[#3f3f3f] hover:text-white transition-colors shrink-0"
+        >
+          <option value={10}>10 rows</option>
+          <option value={25}>25 rows</option>
+          <option value={50}>50 rows</option>
+          <option value={100}>100 rows</option>
+        </select>
       </div>
+
+      {showFilters && (
+        <div className="bg-[#0d0d0d] border border-[#262626] rounded-lg p-4">
+          <FilterPanel
+            filters={filters}
+            onApply={(f) => { applyFilters(f); setShowFilters(false); }}
+            onClear={clearFilters}
+          />
+        </div>
+      )}
 
       {/* Bulk Actions */}
       {selected.length > 0 && (

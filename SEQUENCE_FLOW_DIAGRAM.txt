@@ -1,0 +1,373 @@
+╔════════════════════════════════════════════════════════════════════════════════╗
+║                     EMAIL SEQUENCE CREATION & FLOW                              ║
+╚════════════════════════════════════════════════════════════════════════════════╝
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+                              STEP 1: INITIALIZE
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+User/API calls:
+  POST /api/sequences/initialize
+  {
+    contactId: "507f1f77bcf86cd799439011",
+    sequenceType: "A"  or "B" (or "C", "D", etc if custom)
+  }
+                              ↓
+Backend Validation:
+  ├─ Check: Contact exists? ✓
+  ├─ Check: Contact suppressed? ✓
+  ├─ Check: No active sequence? ✓
+  └─ Check: Valid sequence type? ✓
+                              ↓
+Initialize Sequence:
+  {
+    sequenceType: "A"
+    sequenceStatus: "active"
+    nextEmailNumber: 1
+    nextEmailScheduledFor: "2026-05-02T00:00:00Z"
+    emailHistory: []
+    abTest: {
+      variantIndex: 2,  // Random 0-4
+      replyRate: 0
+    }
+  }
+                              ↓
+Save to Database:
+  Contact.emailSequence = {...}
+  Contact.save()
+                              ↓
+Response:
+  {
+    "success": true,
+    "contact": {
+      "_id": "507f1f77bcf86cd799439011",
+      "firstName": "John",
+      "emailSequence": {...}
+    }
+  }
+
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+                          STEP 2: EMAIL SCHEDULE
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Sequence Configuration:
+
+  SEQUENCE_CONFIG = {
+    A: {
+      name: "US Shopify DTC Brands",
+      emailIntervals: [0, 3, 7, 12, 18],  ← Days for each email
+      maxEmails: 5
+    }
+  }
+
+Email Schedule:
+
+  Day 0:  TODAY  ──→ Email 1 Ready NOW (can send immediately)
+  Day 3:  +3d    ──→ Email 2 Ready (scheduled in 3 days)
+  Day 7:  +7d    ──→ Email 3 Ready (scheduled in 7 days)
+  Day 12: +12d   ──→ Email 4 Ready (scheduled in 12 days)
+  Day 18: +18d   ──→ Email 5 Ready (scheduled in 18 days)
+
+Timeline Example:
+
+  May 2     (Day 0)  Email 1 Sent
+  May 5     (Day 3)  Email 2 Sent
+  May 9     (Day 7)  Email 3 Sent
+  May 14    (Day 12) Email 4 Sent
+  May 20    (Day 18) Email 5 Sent → Sequence Complete
+
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+                         STEP 3: AUTOMATIC SENDING
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Cron Job Trigger (Hourly):
+
+  Time: Every hour at :00 (configurable)
+    ├─ Check: Is it within SEND_DAYS? (e.g., Tue-Wed = 2,3)
+    ├─ Check: Is it within SEND_HOUR_START/END? (e.g., 7 AM - 11 AM)
+    └─ If YES → Run Scheduled Sends
+
+Run Scheduled Sends:
+
+  For each contact with email due:
+    ├─ 1. Load contact from database
+    ├─ 2. Validate send (9 checks):
+    │     ├─ Email format valid?
+    │     ├─ Domain not blocked?
+    │     ├─ Not bounced/DNC/unsubscribed?
+    │     ├─ Has required tokens?
+    │     ├─ Sequence still active?
+    │     ├─ Not already sent today?
+    │     ├─ Daily limit not exceeded?
+    │     ├─ Rate limit OK?
+    │     └─ Pre-conditions met?
+    │
+    ├─ 3. Generate email via Groq AI
+    │     ├─ Analyze contact data
+    │     ├─ Create subject line
+    │     ├─ Create body (personalized)
+    │     └─ Select variant (A/B testing)
+    │
+    ├─ 4. Format email body
+    │     ├─ Replace {{firstName}}, {{companyName}}, etc.
+    │     ├─ Add unsubscribe link
+    │     └─ Add thanks/closing
+    │
+    ├─ 5. Send via Gmail SMTP
+    │     ├─ Build email headers
+    │     ├─ Connect to smtp.gmail.com:587
+    │     ├─ Send email
+    │     └─ Capture delivery status
+    │
+    ├─ 6. Update contact record:
+    │     ├─ emailHistory.push({
+    │     │    emailNumber: 1,
+    │     │    sentAt: NOW,
+    │     │    deliveryStatus: "sent"
+    │     │  })
+    │     ├─ emailStats.emailsSent++
+    │     ├─ nextEmailNumber++
+    │     ├─ nextEmailScheduledFor = Day 3
+    │     └─ outreachStatus = "SENT"
+    │
+    ├─ 7. Log event to AuditLog
+    │     └─ eventType: "email_sent"
+    │
+    └─ 8. Sleep 10 seconds (rate limiting)
+
+Daily Limit Enforcement:
+
+  Before loop:
+    Count emails sent today
+    remaining = DAILY_SEND_LIMIT - sent_today
+    if remaining <= 0: STOP, return
+
+  Process only: remaining contacts
+
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+                      STEP 4: MANUAL SEND (ANY TIME)
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+From Dashboard:
+
+  1. Select contact checkbox
+  2. Click "Send Email" button
+  3. Backend processes immediately (bypasses schedule)
+
+Request:
+  POST /api/contacts/emails/send
+  { contactIds: ["507f1f77bcf86cd799439011"] }
+
+Same as Step 3 validation & sending
+↓
+Response:
+  {
+    "success": true,
+    "successful": 1,
+    "failed": 0
+  }
+
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+                      STEP 5: TRACKING & ENGAGEMENT
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Email Bounce:
+
+  Provider sends bounce notification
+    ↓
+  POST /api/delivery/bounce
+  {
+    email: "john@acme.com",
+    bounceType: "hard",
+    bounceReason: "User doesn't exist"
+  }
+    ↓
+  Find contact
+    ↓
+  Set flags:
+    ├─ flags.bounced = true
+    ├─ flags.bounceType = "hard"
+    ├─ flags.bounceReason = "User doesn't exist"
+    └─ sequenceStatus = "bounced"
+    ↓
+  Log event: "bounce"
+    ↓
+  Contact excluded from future sends
+
+
+Email Reply:
+
+  Contact replies to email
+    ↓
+  Mark reply:
+  POST /api/sequences/{contactId}/mark-replied
+  { emailNumber: 1 }
+    ↓
+  Set:
+    ├─ reply.replied = true
+    ├─ reply.replyType = "positive" (if inferrable)
+    └─ sequenceStatus = "replied"
+    ↓
+  Stop sequence (no more emails)
+
+
+Unsubscribe:
+
+  Contact clicks unsubscribe link in email
+    ↓
+  GET /unsubscribe?token={contactId}
+    ↓
+  Find contact
+    ↓
+  Set flags:
+    ├─ flags.unsubscribe = true
+    └─ sequenceStatus = "unsubscribed"
+    ↓
+  Log event: "unsubscribe"
+    ↓
+  Contact excluded from future sends
+
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+                      STEP 6: COMPLETION & ANALYTICS
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+After All 5 Emails Sent:
+
+  sequenceStatus = "completed"
+  ↓
+  Analytics calculated:
+    ├─ Total emails sent: 5
+    ├─ Reply rate: replies / sent
+    ├─ Bounce rate: bounced / sent
+    ├─ Engagement: opened + replied
+    └─ Comparison with variant A/B
+
+Dashboard Shows:
+
+  ✓ Sequences page: "Health" section
+    ├─ Active Sequences: 1
+    ├─ Ready to Send: 0
+    └─ Total Sent: 1
+
+  ✓ Analytics page: "Performance" section
+    ├─ Total Sequences: 1
+    ├─ Total Replies: 1
+    ├─ Reply Rate: 100%
+    └─ Charts showing breakdown
+
+  ✓ Compliance page: "Audit Log" section
+    └─ Shows all events (sent, bounced, replied, etc)
+
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+                            STATUS WORKFLOW
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+┌─────────────┐
+│  NOT_SENT   │  Contact created, no sequence
+└──────┬──────┘
+       │ POST /api/sequences/initialize
+       ↓
+┌─────────────┐
+│   ACTIVE    │  Sequence initialized, ready to send
+└──────┬──────┘
+       │ Email 1 sent
+       ↓
+┌─────────────┐
+│    SENT     │  First email sent, waiting for next
+└──────┬──────┘
+       │ All 5 sent
+       ↓
+┌─────────────┐
+│ COMPLETED   │  All emails sent, sequence done
+└─────────────┘
+
+Alternative paths:
+
+  ACTIVE → BOUNCED (email bounces)
+           Excluded from future sends
+
+  ACTIVE → REPLIED (contact replies)
+           Stop sending more emails
+
+  ACTIVE → UNSUBSCRIBED (contact unsubscribes)
+           Excluded from future sends
+
+  ACTIVE → PAUSED (manual pause)
+           Resume with POST /api/sequences/:id/resume
+
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+                           CONFIGURATION
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+.env Variables:
+
+  CRON_SCHEDULE=0 * * * *       # Every hour at :00
+  SEND_DAYS=2,3                  # 2=Tue, 3=Wed (0=Sun, 6=Sat)
+  SEND_HOUR_START=7              # Start at 7 AM
+  SEND_HOUR_END=11               # End at 11 AM (exclusive)
+  DAILY_SEND_LIMIT=50            # Max 50 per day
+
+Send Window Example:
+
+  ✓ Tuesday, 8 AM  → SEND (in window)
+  ✓ Wednesday, 10 AM → SEND (in window)
+  ✗ Monday, 8 AM   → SKIP (wrong day)
+  ✗ Tuesday, 12 PM → SKIP (after 11 AM)
+  ✗ Tuesday, 6 AM  → SKIP (before 7 AM)
+
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+                              TROUBLESHOOTING
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Problem: "Contact is on suppression list"
+  Solution: Check /api/compliance/suppression
+            Remove email or set flags.unsubscribe=false
+
+Problem: "Contact already has an active sequence"
+  Solution: Pause or complete existing sequence first
+            Or update contact.emailSequence.sequenceStatus manually
+
+Problem: Emails not sending automatically
+  Solution:
+    1. Verify .env CRON_SCHEDULE is set
+    2. Check send window (SEND_DAYS, SEND_HOUR_START/END)
+    3. Check daily limit (DAILY_SEND_LIMIT)
+    4. Look at backend logs for errors
+    5. Run: POST /api/sequences/run-scheduled manually
+
+Problem: Email 2 not sending (only 1 sent)
+  Solution:
+    1. Check nextEmailScheduledFor in database
+    2. Verify current time is past that date
+    3. Check if daily limit hit
+    4. Verify contact not marked as bounced/replied/unsubscribed
+
+Problem: Only 30 emails sent, but limit is 50
+  Solution:
+    1. Check if some contacts failed validation
+    2. Check backend logs for "Error processing record"
+    3. Check if email generation failed (Groq API)
+    4. Review SMTP connection errors
+
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Ready to create sequences! 🚀
+
+Quick Reference:
+  Initialize:     POST /api/sequences/initialize { contactId, sequenceType }
+  Send Now:       POST /api/sequences/:contactId/send
+  Schedule Check: POST /api/sequences/run-scheduled (manual trigger)
+  Get Status:     GET /api/sequences/:contactId/status
+  Pause:          POST /api/sequences/:contactId/pause
+  Resume:         POST /api/sequences/:contactId/resume
+  Health:         GET /api/sequences/health
+  Analytics:      GET /api/sequences/analytics?type=A
