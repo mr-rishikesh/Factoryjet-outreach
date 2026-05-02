@@ -1,10 +1,10 @@
-
+import 'dotenv/config';
 import Contact from "../models/Contacts.js";
 import mongoose from "mongoose";
 
-
- export async function migrate() {
-  await mongoose.connect("mongodb+srv://mrrishikesh2_db_user:qP9ir3ns0hlQDJ5D@cluster0.axlzsbl.mongodb.net/users");
+export async function migrate() {
+  const mongoUri = process.env.MONGO_URI || 'mongodb://127.0.0.1:27017/factoryjet';
+  await mongoose.connect(mongoUri);
 
   await Contact.updateMany(
     {},
