@@ -37,10 +37,13 @@ export const api = {
       body: JSON.stringify({ ids, update }),
     }),
 
-  sendEmails: (contactIds) =>
+  sendEmails: (contactIds, emailDraft = null) =>
     request(`${BASE}/emails/send`, {
       method: "POST",
-      body: JSON.stringify({ contactIds }),
+      body: JSON.stringify({
+        contactIds,
+        ...(emailDraft && { customEmail: emailDraft })
+      }),
     }),
 
   sendFollowups: (contactIds) =>

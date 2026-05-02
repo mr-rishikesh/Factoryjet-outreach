@@ -38,6 +38,8 @@ export default function EnhancedDashboard() {
   const [sendingSequenceEmail, setSendingSequenceEmail] = useState(false);
   const [initializingSequence, setInitializingSequence] = useState(false);
   const [runningScheduled, setRunningScheduled] = useState(false);
+  const [showEmailEditor, setShowEmailEditor] = useState(false);
+  const [emailDraft, setEmailDraft] = useState({ subject: "", body: "" });
   const debounceRef = useRef(null);
 
   useEffect(() => {
@@ -76,11 +78,42 @@ export default function EnhancedDashboard() {
       return;
     }
 
+    // If email editor is open, show it first
+    if (!emailDraft.subject || !emailDraft.body) {
+      setShowEmailEditor(true);
+      return;
+    }
+
     try {
       setSendingSequenceEmail(true);
-      const res = await api.sendEmails(selected);
+      const res = await api.sendEmails(selected, emailDraft);
       toast.success(`Sent ${res.successful} emails, ${res.failed} failed`);
       setSelected([]);
+      setEmailDraft({ subject: "", body: "" });
+      setShowEmailEditor(false);
+      refetch();
+      api.getStats().then((d) => setStats(d.data)).catch(console.error);
+    } catch (err) {
+      toast.error("Failed to send emails: " + err.message);
+    } finally {
+      setSendingSequenceEmail(false);
+    }
+  };
+
+  // Send custom email from editor
+  const handleSendCustomEmail = async () => {
+    if (!emailDraft.subject.trim() || !emailDraft.body.trim()) {
+      toast.error("Please fill in subject and body");
+      return;
+    }
+
+    try {
+      setSendingSequenceEmail(true);
+      const res = await api.sendEmails(selected, emailDraft);
+      toast.success(`Sent ${res.successful} emails, ${res.failed} failed`);
+      setSelected([]);
+      setEmailDraft({ subject: "", body: "" });
+      setShowEmailEditor(false);
       refetch();
       api.getStats().then((d) => setStats(d.data)).catch(console.error);
     } catch (err) {
@@ -190,7 +223,7 @@ export default function EnhancedDashboard() {
       {stats && <StatsBar stats={stats} />}
 
       {/* Action Buttons Bar */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3">
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-3">
         <button
           onClick={handleRunScheduled}
           disabled={runningScheduled}
@@ -199,6 +232,16 @@ export default function EnhancedDashboard() {
         >
           <Zap className="w-4 h-4" />
           {runningScheduled ? "Running..." : "Run Scheduled"}
+        </button>
+
+        <button
+          onClick={() => setShowEmailEditor(true)}
+          disabled={selected.length === 0}
+          className="inline-flex items-center justify-center gap-2 h-10 px-4 text-sm font-semibold bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+          title={`Edit and send email to ${selected.length} contact${selected.length !== 1 ? 's' : ''}`}
+        >
+          <Settings className="w-4 h-4" />
+          Edit & Send
         </button>
 
         <button
@@ -349,6 +392,80 @@ export default function EnhancedDashboard() {
             api.getStats().then((d) => setStats(d.data)).catch(console.error);
           }}
         />
+      )}
+
+      {/* Email Editor Modal */}
+      {showEmailEditor && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/70 backdrop-blur-sm p-4">
+          <div className="bg-[#0d0d0d] border border-[#262626] rounded-lg shadow-2xl w-full max-w-2xl p-6 space-y-4 max-h-[90vh] overflow-y-auto">
+            <div>
+              <h3 className="text-lg font-semibold text-white">Edit Email</h3>
+              <p className="text-sm text-gray-400 mt-1">
+                Customize your email for {selected.length} contact{selected.length !== 1 ? 's' : ''}
+              </p>
+            </div>
+
+            <div className="space-y-4">
+              {/* Subject Line */}
+              <div>
+                <label className="block text-sm font-medium text-white mb-2">Subject Line:</label>
+                <input
+                  type="text"
+                  value={emailDraft.subject}
+                  onChange={(e) => setEmailDraft({ ...emailDraft, subject: e.target.value })}
+                  placeholder="Enter email subject..."
+                  className="w-full h-10 px-3 text-sm bg-[#161616] border border-[#262626] rounded-lg text-white placeholder:text-[#52525b] focus:outline-none focus:border-[#3f3f3f] focus:ring-1 focus:ring-[#3f3f3f] transition-colors"
+                />
+                <p className="text-xs text-gray-500 mt-1">Available tokens: {{firstName}}, {{companyName}}, {{industry}}</p>
+              </div>
+
+              {/* Email Body */}
+              <div>
+                <label className="block text-sm font-medium text-white mb-2">Email Body:</label>
+                <textarea
+                  value={emailDraft.body}
+                  onChange={(e) => setEmailDraft({ ...emailDraft, body: e.target.value })}
+                  placeholder="Enter email body..."
+                  rows="12"
+                  className="w-full px-3 py-2 text-sm bg-[#161616] border border-[#262626] rounded-lg text-white placeholder:text-[#52525b] focus:outline-none focus:border-[#3f3f3f] focus:ring-1 focus:ring-[#3f3f3f] transition-colors font-mono resize-none"
+                />
+                <p className="text-xs text-gray-500 mt-1">Use {{firstName}}, {{companyName}}, {{industry}}, {{title}} for personalization</p>
+              </div>
+
+              {/* Help Text */}
+              <div className="bg-[#161616] rounded-lg p-3 border border-[#262626]">
+                <p className="text-xs text-gray-400 font-semibold mb-2">📝 Personalization Tokens:</p>
+                <div className="grid grid-cols-2 gap-2 text-xs text-gray-500">
+                  <div>{{firstName}} - First name</div>
+                  <div>{{lastName}} - Last name</div>
+                  <div>{{companyName}} - Company name</div>
+                  <div>{{title}} - Job title</div>
+                  <div>{{industry}} - Industry</div>
+                  <div>{{email}} - Email address</div>
+                </div>
+              </div>
+            </div>
+
+            <div className="flex gap-3 pt-4">
+              <button
+                onClick={() => {
+                  setShowEmailEditor(false);
+                  setEmailDraft({ subject: "", body: "" });
+                }}
+                className="flex-1 px-4 py-2 bg-[#161616] text-gray-400 rounded-lg hover:text-white transition-colors"
+              >
+                Cancel
+              </button>
+              <button
+                onClick={handleSendCustomEmail}
+                disabled={sendingSequenceEmail || !emailDraft.subject.trim() || !emailDraft.body.trim()}
+                className="flex-1 px-4 py-2 bg-white text-black rounded-lg hover:bg-gray-100 disabled:opacity-50 disabled:cursor-not-allowed font-medium transition-colors"
+              >
+                {sendingSequenceEmail ? "Sending..." : `Send to ${selected.length}`}
+              </button>
+            </div>
+          </div>
+        </div>
       )}
 
       {/* Sequence Modal */}
