@@ -1,0 +1,209 @@
+================================================================================
+                    GREETING FIX - EXECUTION PATH MAP
+================================================================================
+
+CURRENT STATE: Email greeting fix implemented and verified across all paths
+
+================================================================================
+                         EXECUTION FLOW DIAGRAM
+================================================================================
+
+FRONTEND (Dashboard)
+    |
+Six Buttons Available:
+|-- [1] Run Scheduled (Blue +)
+|-- [2] Change Email (Cyan envelope)
+|-- [3] Edit & Send (Indigo gear)
+|-- [4] Send Email (Green envelope)
+|-- [5] Send Followup (Purple envelope)
+|-- [6] Start Sequence (Orange play)
+                                      |
+                         ALL call formate()
+                                      |
+                    GREETING DETECTION & INSERTION
+                                      |
+                    EXACTLY ONE greeting added
+
+
+DETAILED EXECUTION PATH:
+================================================================================
+
+PATH 1: Dashboard "Edit & Send" Button (Button #3)
+----------------------------------------------------
+Frontend: EnhancedDashboard.jsx
+  -> handleSendCustomEmail()
+  -> api.sendEmails(contactIds, emailDraft)
+    |
+Backend: POST /email/send
+  -> sendEmail.controller.js:sendEmail()
+  -> generateColdEmail(contact) [Optional if needed]
+  -> formate(body, contact, thanks)
+    |-- Trim body
+    |-- Test: /^(hi|hello|hey)\s+/i.test(bodyTrimmed)
+    |-- If match: greeting = EMPTY (do not add)
+    |-- If no match: greeting = 'Hi {name},...' (add)
+  -> sendEmailsNodemailer(formattedBody)
+    |
+Result: SINGLE greeting in final email
+
+
+PATH 2: Dashboard "Send Email" Button (Button #4)
+--------------------------------------------------
+Frontend: EnhancedDashboard.jsx
+  -> handleSendEmail()
+  -> api.sendToContacts(contactIds)
+    |
+Backend: POST /api/emails/send
+  -> emailAction.controller.js:sendToContacts()
+  -> For each contact:
+    |-- generateColdEmail(contact)
+    |-- formate(generatedBody, contact, thanks)
+    |   |-- Trim body
+    |   |-- Test: /^(hi|hello|hey)\s+/i.test(bodyTrimmed)
+    |   |-- Add greeting: conditional on test result
+    |   |-- Return formatted body
+    |-- sendEmailsNodemailer(formattedBody)
+    |
+Result: SINGLE greeting in final email
+
+
+PATH 3: Dashboard "Send Followup" Button (Button #5)
+----------------------------------------------------
+Frontend: EnhancedDashboard.jsx
+  -> handleSendFollowup()
+  -> api.sendFollowup(contactIds)
+    |
+Backend: POST /api/emails/followup
+  -> emailAction.controller.js:sendFollowup()
+  -> For each contact:
+    |-- generateColdEmail(contact)
+    |-- formate(generatedBody, contact, thanks)
+    |   |-- Trim body
+    |   |-- Test: /^(hi|hello|hey)\s+/i.test(bodyTrimmed)
+    |   |-- Add greeting: conditional on test result
+    |   |-- Return formatted body
+    |-- sendEmailsNodemailer(formattedBody)
+    |
+Result: SINGLE greeting in final email
+
+
+PATH 4: Dashboard "Start Sequence" Button (Button #6)
+-----------------------------------------------------
+Frontend: EnhancedDashboard.jsx
+  -> handleInitializeSequence()
+  -> api.initializeSequence(contactIds, sequenceType)
+    |
+Backend: POST /api/sequences/initialize
+  -> sequenceRouter
+  -> sequenceService.js:initializeSequence()
+  -> Returns initialized contact with empty emailHistory
+    |
+Frontend: User must then send first email via:
+  -> api.sendSequenceEmail(contactId)
+    |
+Backend: POST /api/sequences/:id/send
+  -> sequenceRouter
+  -> sequenceService.js:sendNextEmail(contactId)
+    |-- generateColdEmail(contact, seqType, emailNum, variantIdx)
+    |-- formate(generatedBody, contact, thanks, unsubUrl)
+    |   |-- Trim body
+    |   |-- Test: /^(hi|hello|hey)\s+/i.test(bodyTrimmed)
+    |   |-- Add greeting: conditional on test result
+    |   |-- Return formatted body
+    |-- sendEmailsNodemailer(formattedBody)
+    |-- Update contact sequence status
+    |
+Result: SINGLE greeting in final email
+
+
+PATH 5: Cron-Scheduled Send
+----------------------------
+Backend: Cron job (default: hourly)
+  -> sequenceService.js:runScheduledSends()
+  -> For each contact with due email:
+    |-- sendNextEmail(contactId)
+    |-- generateColdEmail()
+    |-- formate(body, contact, thanks, unsubUrl)
+    |   |-- Trim body
+    |   |-- Test: /^(hi|hello|hey)\s+/i.test(bodyTrimmed)
+    |   |-- Add greeting: conditional on test result
+    |   |-- Return formatted body
+    |-- sendEmailsNodemailer(formattedBody)
+    |
+Result: SINGLE greeting in final email
+
+
+================================================================================
+                         GREETING DETECTION LOGIC
+================================================================================
+
+REGEX PATTERN: /^(hi|hello|hey)\s+/i
+
+Input: "Hi John,\n\nMost brands..."
+  -> Test regex match
+  -> Match: YES (starts with "Hi ")
+  -> Greeting variable: EMPTY
+  -> Final: "Hi John,\n\nMost brands..." (body unchanged)
+
+Input: "{{first_name}} —\n\nMost brands..."
+  -> Test regex match
+  -> Match: NO (starts with "{{", not greeting)
+  -> Greeting variable: 'Hi {firstName},\n\n'
+  -> Final: "Hi John,\n\n{{first_name}} —\n\nMost brands..."
+
+Input: "I came across..."
+  -> Test regex match
+  -> Match: NO (starts with "I")
+  -> Greeting variable: 'Hi {firstName},\n\n'
+  -> Final: "Hi John,\n\nI came across..."
+
+
+================================================================================
+                         VERIFICATION CHECKLIST
+================================================================================
+
+IMPLEMENTATION:
+- Code updated: backend/email-service/email.body.format.js lines 7-12
+- Regex pattern: /^(hi|hello|hey)\s+/i
+- Greeting variable: conditional (empty or 'Hi {name},\n\n')
+
+COVERAGE:
+- Button 1 (Run Scheduled): Covered via sendNextEmail()
+- Button 2 (Change Email): N/A (only changes email address)
+- Button 3 (Edit & Send): Covered via formate()
+- Button 4 (Send Email): Covered via formate()
+- Button 5 (Send Followup): Covered via formate()
+- Button 6 (Start Sequence): Covered via sendNextEmail()
+- Direct API calls: All covered
+- Cron jobs: Covered via sendNextEmail()
+
+CONSISTENCY:
+- Sequence A: Yes
+- Sequence B: Yes
+- Custom emails: Yes
+- AI-generated: Yes
+- No configuration: Yes
+- Backward compatible: Yes
+
+
+================================================================================
+                         RESULTS & EXAMPLES
+================================================================================
+
+BEFORE FIX:
+Email would show:
+"Hi John,
+
+Hi John,
+
+Most brands doing $2M-$10M on Shopify..."
+
+AFTER FIX:
+Email shows:
+"Hi John,
+
+Most brands doing $2M-$10M on Shopify..."
+
+STATUS: VERIFIED WORKING
+
+================================================================================

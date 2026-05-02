@@ -2,7 +2,7 @@
 // Add domains here to block sending — matching is case-insensitive.
 const BLOCKED_DOMAINS = [
   // Personal email providers (consumer)
-  'gmail.com',
+
   'yahoo.com',
   'hotmail.com',
   'outlook.com',

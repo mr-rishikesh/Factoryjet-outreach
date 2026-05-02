@@ -85,7 +85,23 @@
       "Bash(index\")",
       "Bash(awk '{print $9, \"\\(\" $5 \"\\)\"}')",
       "Bash(xargs ls *)",
-      "Read(//c/c/FactoryJet/email/**)"
+      "Read(//c/c/FactoryJet/email/**)",
+      "Bash(xargs grep *)",
+      "Bash(curl -s http://localhost:5000/api/contacts?page=1)",
+      "Bash(curl -s http://localhost:5000/health)",
+      "PowerShell($response = Invoke-WebRequest -Uri \"http://localhost:5000/api/contacts?limit=2\" -UseBasicParsing -ErrorAction SilentlyContinue; if \\($response\\) { $response.Content | ConvertFrom-Json | Select-Object -ExpandProperty contacts | Select-Object _id,firstName,lastName,email,companyName | ConvertTo-Json } else { \"No response\" })",
+      "PowerShell($response = Invoke-WebRequest -Uri \"http://localhost:5000/api/contacts?limit=2\" -UseBasicParsing -ErrorAction SilentlyContinue; if \\($response\\) { $json = $response.Content | ConvertFrom-Json; $json.data[0] | Select-Object _id,firstName,lastName,email,companyName | ConvertTo-Json } else { \"No response\" })",
+      "PowerShell($contactId = \"69f4903c66fb06e52a216720\"; $body = @{email = \"ayyappa.meegada@itconnectus.com\"} | ConvertTo-Json; $response = Invoke-WebRequest -Uri \"http://localhost:5000/api/contacts/$contactId\" -Method PATCH -Body $body -ContentType \"application/json\" -UseBasicParsing -ErrorAction SilentlyContinue; if \\($response\\) { $response.Content | ConvertFrom-Json | Select-Object success, message | ConvertTo-Json } else { \"Error\" })",
+      "PowerShell($contactId = \"69f4903c66fb06e52a216720\"; $body = @{ contactIds = @\\($contactId\\); emailDraft = @{ subject = \"Test Greeting Consistency\"; body = \"I wanted to reach out about your support costs.\" } } | ConvertTo-Json -Depth 5; $response = Invoke-WebRequest -Uri \"http://localhost:5000/api/email/send\" -Method POST -Body $body -ContentType \"application/json\" -UseBasicParsing -ErrorAction SilentlyContinue; if \\($response\\) { $response.Content | ConvertFrom-Json | ConvertTo-Json } else { \"Error\" })",
+      "PowerShell($contactId = \"69f4903c66fb06e52a216720\"; $body = @{ contactIds = @\\($contactId\\); emailDraft = @{ subject = \"Test Greeting Consistency\"; body = \"I wanted to reach out about your support costs.\" } } | ConvertTo-Json -Depth 5; $response = Invoke-WebRequest -Uri \"http://localhost:5000/api/email/send\" -Method POST -Body $body -ContentType \"application/json\" -UseBasicParsing -ErrorAction SilentlyContinue -SkipHttpErrorCheck; Write-Host \"Status: \" $response.StatusCode; $response.Content)",
+      "Bash(bash test_greeting.sh)",
+      "Bash(curl -s http://localhost:5174)",
+      "Bash(awk '{print $5, $9}')",
+      "Bash(mv FALLBACK_*.* DOCUMENTATION/)",
+      "Bash(mv AI_FALLBACK_*.* DOCUMENTATION/)",
+      "Bash(mv GREETING_*.* DOCUMENTATION/)",
+      "Bash(mv PHASE_*.* DOCUMENTATION/)",
+      "Bash(mv FINAL_STATUS_*.* DOCUMENTATION/)"
     ]
   }
 }
